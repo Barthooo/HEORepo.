@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Resource, Collection, Theme, Submission } from '../types';
 import { REPO_VERSION } from '../data';
@@ -340,6 +341,10 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
   const handleAddSubCategory = (colId: string) => {
     const cleanSub = sanitizeInput(newSubCategory).trim();
     if (!cleanSub) return;
+    if (cleanSub.toLowerCase() === 'all') {
+      alert("'All' is a reserved system filter and cannot be added as a custom subcategory.");
+      return;
+    }
     setCollections(prev => prev.map(col => {
       if (col.id === colId) {
         const subs = col.subCategories || [];
@@ -626,6 +631,7 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
                             <button onClick={() => handleAddSubCategory(col.id)} className="px-4 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">Add</button>
                           </div>
                         )}
+                        <p className="mt-4 text-[11px] text-slate-400 font-medium italic">"All" is a system-default filter and is always visible in the vault.</p>
                       </div>
                     </div>
                   </div>

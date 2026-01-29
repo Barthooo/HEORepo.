@@ -1,4 +1,3 @@
-
 export interface Resource {
   id: string;
   title: string;
@@ -39,5 +38,6 @@ export enum Theme {
   GENERAL = 'general',
   ECONOMIC_MODELING = 'modelling',
   SYSTEMATIC_REVIEWS = 'meta-analysis',
+  SURVIVAL_ANALYSIS = 'survival-analysis',
   NEWS = 'news'
 }

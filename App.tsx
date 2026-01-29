@@ -71,9 +71,7 @@ const App: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
 
-  // VERSION SYNC LOGIC:
-  // We compare the 'REPO_VERSION' from data.ts with the version stored in the browser.
-  // If data.ts is newer, we ignore localStorage and use the fresh data from the file.
+  // VERSION SYNC LOGIC
   const shouldResetCache = useMemo(() => {
     const savedVersionStr = localStorage.getItem('heo_repo_version');
     const savedVersion = savedVersionStr ? parseInt(savedVersionStr) : 0;
@@ -126,7 +124,6 @@ const App: React.FC = () => {
       localStorage.setItem('heo_resources', JSON.stringify(resources));
       localStorage.setItem('heo_submissions', JSON.stringify(submissions));
       localStorage.setItem('heo_tagline', JSON.stringify(taglineWords));
-      // Save the version from the file into localStorage so we know we are 'up to date'
       localStorage.setItem('heo_repo_version', (REPO_VERSION || 0).toString());
     } catch (e) {
       console.error("Storage Error: Local persistence failed.", e);
@@ -134,13 +131,9 @@ const App: React.FC = () => {
   }, [collections, resources, submissions, taglineWords]);
 
   useEffect(() => {
-    const col = collections.find(c => c.id === activeTheme);
-    if (col && col.subCategories && col.subCategories.length > 0) {
-      setActiveSubCategory(col.subCategories[0]);
-    } else {
-      setActiveSubCategory('all');
-    }
-  }, [activeTheme, collections]);
+    // We keep 'all' as the default selected subcategory when changing theme
+    setActiveSubCategory('all');
+  }, [activeTheme]);
 
   const handleLogin = () => {
     if (password.trim() === '123456') {
@@ -224,7 +217,12 @@ const App: React.FC = () => {
   const isAdminDeckActive = activeTheme === 'admin-deck' && isAdmin;
   const isLandingActive = activeTheme === 'landing';
   const collectionName = isAdminDeckActive ? t.management : (activeTheme === 'all' ? t.archive : currentCollection?.name || t.archive);
-  const subCategories = currentCollection?.subCategories || [];
+  
+  // Create a display list of subcategories with "All" at the end
+  const subCategoryFilters = useMemo(() => {
+    if (!currentCollection) return [];
+    return [...(currentCollection.subCategories || []), 'All'];
+  }, [currentCollection]);
 
   return (
     <div className="flex h-screen bg-[#FCFDFF] text-slate-900 overflow-hidden font-['Inter'] antialiased relative">
@@ -244,8 +242,9 @@ const App: React.FC = () => {
         {!isLandingActive && (
           <header className="bg-white px-4 md:px-8 pt-4 md:pt-8 pb-5 border-b border-[#F1F5F9]/60 relative z-30">
             <div className="max-w-[1440px] mx-auto">
+              {/* Mobile Header */}
               <div className="flex items-center justify-between mb-4 lg:hidden">
-                <div className="flex items-center font-[900] text-[26px] tracking-[-0.04em] leading-none">
+                <div className="flex items-center font-[900] text-[26px] tracking-[-0.04em] leading-none select-none cursor-pointer" onClick={() => setActiveTheme('landing')}>
                   <span style={{ color: DARK_NAVY }}>HEO</span>
                   <span style={{ 
                     backgroundImage: `linear-gradient(to right, ${DARK_NAVY} 50%, ${BRAND_BLUE} 50%)`,
@@ -257,8 +256,18 @@ const App: React.FC = () => {
                     margin: '0 -0.2em'
                   }}>R</span>
                   <span style={{ color: BRAND_BLUE }}>epo</span>
+                  {/* RESTORED DOT */}
+                  <div 
+                    className="ml-[2px] self-end" 
+                    style={{ 
+                      backgroundColor: BRAND_BLUE, 
+                      width: '6.5px', 
+                      height: '6.5px',
+                      marginBottom: '3px' 
+                    }}
+                  ></div>
                 </div>
-                <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-slate-50 rounded-xl"><svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+                <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors"><svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
               </div>
 
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-8 mb-6">
@@ -283,12 +292,28 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {!isAdminDeckActive && subCategories.length > 0 && (
-                <div className="min-h-[48px] flex items-center">
-                  <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                    {subCategories.map((sub) => (
-                      <button key={sub} onClick={() => setActiveSubCategory(sub)} className={`px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-[800] tracking-[0.1em] uppercase whitespace-nowrap active:scale-95 border transition-colors duration-200 ${activeSubCategory === sub ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-lg shadow-slate-200' : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'}`}>{sub}</button>
-                    ))}
+              {/* Sub Category Filters with Mobile Optimizations */}
+              {!isAdminDeckActive && subCategoryFilters.length > 0 && (
+                <div className="min-h-[48px] flex items-center overflow-hidden">
+                  <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
+                    {subCategoryFilters.map((sub) => {
+                      const filterValue = sub.toLowerCase() === 'all' ? 'all' : sub;
+                      const isSelected = activeSubCategory === filterValue;
+                      
+                      return (
+                        <button 
+                          key={sub} 
+                          onClick={() => setActiveSubCategory(filterValue)} 
+                          className={`px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-[800] tracking-[0.1em] uppercase whitespace-nowrap active:scale-95 border transition-all duration-300 snap-center ${
+                            isSelected 
+                            ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-lg shadow-slate-200' 
+                            : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'
+                          }`}
+                        >
+                          {sub}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

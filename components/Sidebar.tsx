@@ -84,17 +84,16 @@ const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
   const displayText = currentWord.substring(0, subIndex);
 
   return (
-    <div className="flex items-end gap-[3px]">
-      <span style={{ color: BRAND_BLUE, fontWeight: 900, lineHeight: '1', display: 'inline-block' }}>
+    <div className="flex items-center gap-[3px] h-full">
+      <span style={{ color: BRAND_BLUE, fontWeight: 900, display: 'inline-block' }}>
         {displayText || '\u00A0'}
       </span>
       <div 
-        className="animate-pulse"
         style={{ 
           backgroundColor: BRAND_BLUE, 
           width: '4px', 
           height: '4px',
-          marginBottom: '1px' 
+          flexShrink: 0
         }}
       ></div>
     </div>
@@ -121,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-[280px] lg:w-1/6 lg:min-w-[240px] bg-white border-r border-[#E5E7EB] transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-50 w-[280px] lg:w-1/6 lg:min-w-[240px] bg-white border-r border-[#E5E7EB] transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) lg:relative lg:translate-x-0 will-change-transform
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col
       `}>
         <div className="p-8 pb-4">
@@ -149,10 +148,14 @@ const Sidebar: React.FC<SidebarProps> = ({
               ></div>
             </div>
             
-            <div className="flex flex-col gap-[4px] uppercase mt-3.5 antialiased leading-[1.0]" style={{ fontSize: '10px' }}>
-              <span style={{ color: SLATE_LIGHTER, fontWeight: 900, letterSpacing: '0.45em' }}>{t.repository}</span>
-              <span style={{ color: SLATE_EXTRA_LIGHTER, fontWeight: 900, letterSpacing: '0.25em' }}>{t.for}</span>
-              <div style={{ letterSpacing: '0.25em', height: '14px', display: 'flex', alignItems: 'flex-end' }}>
+            <div className="flex flex-col gap-[5px] uppercase mt-4 antialiased leading-none" style={{ fontSize: '10px' }}>
+              <div className="flex items-center" style={{ height: '12px' }}>
+                <span style={{ color: SLATE_LIGHTER, fontWeight: 900, letterSpacing: '0.45em' }}>{t.repository}</span>
+              </div>
+              <div className="flex items-center" style={{ height: '12px' }}>
+                <span style={{ color: SLATE_EXTRA_LIGHTER, fontWeight: 900, letterSpacing: '0.25em' }}>{t.for}</span>
+              </div>
+              <div style={{ letterSpacing: '0.25em', height: '12px', display: 'flex', alignItems: 'center' }}>
                 <TypingTagline words={taglineWords} />
               </div>
             </div>
