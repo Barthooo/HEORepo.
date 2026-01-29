@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Resource, Collection, Theme, Submission } from '../types';
+import { REPO_VERSION } from '../data';
 
 interface AdminDashboardProps {
   resources: Resource[];
@@ -18,9 +19,6 @@ const sanitizeInput = (str: string): string => {
   return str.replace(/<[^>]*>?/gm, '').trim();
 };
 
-/**
- * Robust CSV Parser that handles quoted fields, newlines within fields, and escaped quotes.
- */
 const parseCSV = (text: string): string[][] => {
   const result: string[][] = [];
   let row: string[] = [];
@@ -34,7 +32,7 @@ const parseCSV = (text: string): string[][] => {
     if (inQuotes) {
       if (char === '"' && nextChar === '"') {
         cell += '"';
-        i++; // skip next quote
+        i++;
       } else if (char === '"') {
         inQuotes = false;
       } else {
@@ -53,7 +51,7 @@ const parseCSV = (text: string): string[][] => {
         }
         row = [];
         cell = '';
-        if (char === '\r' && nextChar === '\n') i++; // skip \n
+        if (char === '\r' && nextChar === '\n') i++;
       } else {
         cell += char;
       }
@@ -91,6 +89,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // For visual sync indicator
+  const localVersion = localStorage.getItem('heo_repo_version') || '0';
+  const sourceVersion = (REPO_VERSION || 0).toString();
+  const isOutOfSync = parseInt(sourceVersion) > parseInt(localVersion);
+
   useEffect(() => {
     if (initialTab && activeTab !== initialTab) {
       setActiveTab(initialTab as any);
@@ -102,7 +105,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setTimeout(() => setStatusMessage(null), 6000);
   };
 
-  // --- GITHUB SYNC: DATA.TS EXPORT ---
   const handleExportDataFile = () => {
     try {
       if (collections.length === 0 || resources.length === 0) {
@@ -113,14 +115,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const collectionsStr = JSON.stringify(collections, null, 2);
       const resourcesStr = JSON.stringify(resources, null, 2);
       const taglineStr = JSON.stringify(taglineWords, null, 2);
+      const currentTimestamp = Date.now();
 
       const fileContent = `import { Collection, Resource, Theme } from './types';
 
 /**
  * HEORepo Repository Data
  * Generated: ${new Date().toLocaleString()}
- * Instructions: Replace your existing 'data.ts' with this file and push to GitHub.
+ * REPO_VERSION is used to trigger cache resets for all users when you push to GitHub.
  */
+
+export const REPO_VERSION = ${currentTimestamp};
 
 export const COLLECTIONS: Collection[] = ${collectionsStr};
 
@@ -135,7 +140,7 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
       link.setAttribute("href", url);
       link.setAttribute("download", "data.ts");
       link.click();
-      showStatus("data.ts exported. Upload this to your GitHub repo to update the site.");
+      showStatus("data.ts exported with new version timestamp. Push this to GitHub now!");
     } catch (err) {
       showStatus("Export failed.", "error");
       console.error(err);
@@ -147,11 +152,11 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
       localStorage.removeItem('heo_collections');
       localStorage.removeItem('heo_resources');
       localStorage.removeItem('heo_tagline');
+      localStorage.removeItem('heo_repo_version');
       window.location.reload();
     }
   };
 
-  // --- REORDERING UTILITIES ---
   const moveResource = (index: number, direction: 'up' | 'down') => {
     const newResources = [...resources];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -184,7 +189,6 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
     }));
   };
 
-  // --- CSV UTILITIES ---
   const handleDownloadTemplate = () => {
     const headers = ['Title', 'Description', 'URL', 'Contributor', 'Category', 'SubCategory'];
     const example = ['Example Analysis', 'Resource description.', 'https://example.com', 'Admin', Theme.GENERAL, 'Basics'];
@@ -264,7 +268,6 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // --- DATA UPDATE HANDLERS ---
   const handleUpdateResource = (id: string, field: keyof Resource, value: any) => {
     setResources(prev => prev.map(res => {
       if (res.id === id) {
@@ -679,10 +682,29 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-slate-50 rounded-[20px] md:rounded-[32px] p-6 md:p-10 border border-slate-100 flex flex-col h-full">
-                <h3 className="text-lg md:text-xl font-black text-[#0F172A] mb-1.5 md:mb-2">GitHub Synchronization</h3>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg md:text-xl font-black text-[#0F172A] mb-1.5">GitHub Synchronization</h3>
+                    <p className="text-slate-500 text-[13px] md:text-sm">Download the current project state as a <strong>data.ts</strong> file.</p>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isOutOfSync ? 'bg-amber-100 text-amber-600 animate-pulse' : 'bg-emerald-100 text-emerald-600'}`}>
+                    {isOutOfSync ? 'Sync Needed' : 'In Sync'}
+                  </div>
+                </div>
+
+                <div className="bg-white/50 p-4 rounded-2xl border border-slate-200 mb-6 space-y-3">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-slate-400">Source (data.ts):</span>
+                    <span className="text-slate-800">{sourceVersion}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-slate-400">Local (Browser):</span>
+                    <span className="text-slate-800">{localVersion}</span>
+                  </div>
+                </div>
+
                 <p className="text-slate-500 text-[13px] md:text-sm mb-6 flex-1">
-                  Download the current project state as a <strong>data.ts</strong> file. 
-                  Replace the file of the same name in your GitHub repository to update the site globally.
+                  Replace the file of the same name in your GitHub repository. This triggers a cache reset for all users.
                 </p>
                 <div className="flex flex-col gap-3">
                   <button onClick={handleExportDataFile} className="w-full bg-[#0F172A] text-white px-8 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2 group">
