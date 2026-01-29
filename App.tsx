@@ -118,9 +118,15 @@ const App: React.FC = () => {
     }
   }, [collections, resources, submissions, taglineWords]);
 
+  // Handle category changes - select the first subcategory by default if available
   useEffect(() => {
-    setActiveSubCategory('all');
-  }, [activeTheme]);
+    const col = collections.find(c => c.id === activeTheme);
+    if (col && col.subCategories && col.subCategories.length > 0) {
+      setActiveSubCategory(col.subCategories[0]);
+    } else {
+      setActiveSubCategory('all');
+    }
+  }, [activeTheme, collections]);
 
   const handleLogin = () => {
     if (password.trim() === '123456') {
@@ -306,16 +312,7 @@ const App: React.FC = () => {
               {!isAdminDeckActive && subCategories.length > 0 && (
                 <div className="min-h-[48px] flex items-center">
                   <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                    <button
-                      onClick={() => setActiveSubCategory('all')}
-                      className={`px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-[800] tracking-[0.1em] uppercase whitespace-nowrap active:scale-95 border transition-colors duration-200 ${
-                        activeSubCategory === 'all'
-                        ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-lg shadow-slate-200'
-                        : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      {t.allResources}
-                    </button>
+                    {/* The "All Resources" tab was removed from here per request */}
                     {subCategories.map((sub, idx) => (
                       <button
                         key={sub}
