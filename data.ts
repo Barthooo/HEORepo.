@@ -2,19 +2,21 @@ import { Collection, Resource, Theme } from './types';
 
 /**
  * HEORepo Repository Data
- * Generated: 30/01/2026, 11:53:14
+ * Generated: 30/01/2026, 13:33:32
  * REPO_VERSION is used to trigger cache resets for all users when you push to GitHub.
  */
 
-export const REPO_VERSION = 1769745194648;
+export const REPO_VERSION = 1769751212126;
 
 export const COLLECTIONS: Collection[] = [
   {
     "id": "general",
-    "name": "General",
+    "name": "HEOR General",
     "icon": "📦",
     "description": "Broad HEOR resources and foundational materials.",
-    "subCategories": []
+    "subCategories": [
+      "Intro to HEOR"
+    ]
   },
   {
     "id": "modelling",
@@ -24,7 +26,7 @@ export const COLLECTIONS: Collection[] = [
     "subCategories": [
       "Decision Tree",
       "Markov",
-      "PSA"
+      "PartSA"
     ]
   },
   {
@@ -47,7 +49,7 @@ export const COLLECTIONS: Collection[] = [
   },
   {
     "id": "custom-7z8un",
-    "name": "Books",
+    "name": "HEOR Books",
     "icon": "📖",
     "description": "",
     "subCategories": []
@@ -55,6 +57,54 @@ export const COLLECTIONS: Collection[] = [
 ];
 
 export const RESOURCES: Resource[] = [
+  {
+    "id": "bv8oqx6fe",
+    "title": "PartSA_Youtube tutorial",
+    "description": "A Youtube viedo showing how to run a Probabilistic Sensitivity Analysis (PSA) in Excel using a simple Markov model to compare two treatments' cost-effectiveness by Mirko von Hein.",
+    "url": "https://www.youtube.com/watch?v=fPmQaf_XQDA",
+    "domain": "WWW.YOUTUBE.COM",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "30/01/2026",
+    "contributor": "Admin",
+    "category": "modelling",
+    "subCategory": "PartSA"
+  },
+  {
+    "id": "krf957vpw",
+    "title": "KM-GPT",
+    "description": "An Automated Pipeline for Reconstructing Individual Patient Data from Kaplan-Meier Plots, require OpenAI API Key.",
+    "url": "https://km-gpt.wse.jhu.edu/",
+    "domain": "KM-GPT.WSE.JHU.EDU",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "30/01/2026",
+    "contributor": "Admin",
+    "category": "survival-analysis",
+    "subCategory": "all"
+  },
+  {
+    "id": "vwlxwbq1o",
+    "title": "PartSA_Excel template",
+    "description": "A template of PartSA model in Excel by Mvon Hein.",
+    "url": "https://github.com/MvonHein/Partitioned-Survival-Model",
+    "domain": "GITHUB.COM",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "30/01/2026",
+    "contributor": "Admin",
+    "category": "modelling",
+    "subCategory": "PartSA"
+  },
+  {
+    "id": "ofcji2wpa",
+    "title": "PartSA_DARTH",
+    "description": "A repository contains functions useful for conducting partitioned survival analysis in R and provides a few examples.",
+    "url": "https://github.com/DARTH-git/Partitioned-Survival-Analysis/tree/master",
+    "domain": "GITHUB.COM",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "30/01/2026",
+    "contributor": "Admin",
+    "category": "modelling",
+    "subCategory": "PartSA"
+  },
   {
     "id": "1blyfid3n",
     "title": "WebPlotDigitizer",
@@ -209,7 +259,7 @@ export const RESOURCES: Resource[] = [
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "28/01/2026",
     "category": "modelling",
-    "subCategory": "PSA"
+    "subCategory": "all"
   },
   {
     "id": "anrz5j07v",
