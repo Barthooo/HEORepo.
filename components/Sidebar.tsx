@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Collection, Theme } from '../types';
 
@@ -9,7 +10,6 @@ interface SidebarProps {
   onClose: () => void;
   onAdminClick: () => void;
   isAdminActive: boolean;
-  notificationCount?: number;
   taglineWords: string[];
 }
 
@@ -35,14 +35,12 @@ const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
   const [reverse, setReverse] = useState(false);
   const [pause, setPause] = useState(false);
 
-  // Constants for typing speed
   const TYPE_SPEED = 80;
   const DELETE_SPEED = 40;
   const PAUSE_TIME = 1500;
 
   useEffect(() => {
     if (!words || words.length === 0) return;
-
     if (index >= words.length) {
       setIndex(0);
       setSubIndex(0);
@@ -50,7 +48,6 @@ const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
       setPause(false);
       return;
     }
-
     if (pause) {
       const timeout = setTimeout(() => {
         setPause(false);
@@ -58,28 +55,23 @@ const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
       }, PAUSE_TIME);
       return () => clearTimeout(timeout);
     }
-
     if (reverse && subIndex === 0) {
       setReverse(false);
       setIndex((prev) => (prev + 1) % words.length);
       return;
     }
-
     const currentWord = words[index];
     if (!reverse && subIndex === currentWord.length) {
       setPause(true);
       return;
     }
-
     const timeout = setTimeout(() => {
       setSubIndex((prev) => prev + (reverse ? -1 : 1));
     }, reverse ? DELETE_SPEED : TYPE_SPEED);
-
     return () => clearTimeout(timeout);
   }, [subIndex, index, reverse, pause, words]);
 
   if (!words || words.length === 0) return null;
-
   const currentWord = words[index % words.length] || '';
   const displayText = currentWord.substring(0, subIndex);
 
@@ -88,14 +80,7 @@ const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
       <span style={{ color: BRAND_BLUE, fontWeight: 900, display: 'inline-block' }}>
         {displayText || '\u00A0'}
       </span>
-      <div 
-        style={{ 
-          backgroundColor: BRAND_BLUE, 
-          width: '4px', 
-          height: '4px',
-          flexShrink: 0
-        }}
-      ></div>
+      <div style={{ backgroundColor: BRAND_BLUE, width: '4px', height: '4px', flexShrink: 0 }}></div>
     </div>
   );
 };
@@ -108,7 +93,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose, 
   onAdminClick, 
   isAdminActive, 
-  notificationCount = 0, 
   taglineWords
 }) => {
   const isLandingActive = activeTheme === 'landing';
@@ -137,15 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 margin: '0 -0.2em'
               }}>R</span>
               <span style={{ color: BRAND_BLUE }}>epo</span>
-              <div 
-                className="ml-[2px] self-end" 
-                style={{ 
-                  backgroundColor: BRAND_BLUE, 
-                  width: '8px', 
-                  height: '8px',
-                  marginBottom: '4px' 
-                }}
-              ></div>
+              <div className="ml-[2px] self-end" style={{ backgroundColor: BRAND_BLUE, width: '8px', height: '8px', marginBottom: '4px' }}></div>
             </div>
             
             <div className="flex flex-col gap-[5px] uppercase mt-4 antialiased leading-none" style={{ fontSize: '10px' }}>
@@ -192,7 +168,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-2.5">
               {collections.map((col) => {
                 const isActive = activeTheme === col.id;
-                
                 return (
                   <button
                     key={col.id}
@@ -255,11 +230,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </svg>
                   </div>
                   <span className="text-[14.5px] font-[900] tracking-tight">{t.adminDeck}</span>
-                  {notificationCount > 0 && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black border-2 border-white group-hover:scale-110 transition-transform shadow-sm">
-                      {notificationCount}
-                    </div>
-                  )}
                 </button>
               </div>
             </div>

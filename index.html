@@ -33,12 +33,22 @@
         }
       }
 
+      @keyframes drop {
+        0% { transform: translateY(0) rotate(0deg); }
+        100% { transform: translateY(1000px) rotate(450deg); opacity: 0; }
+      }
+
       .animate-card-entry {
         animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
       .animate-float {
         animation: float 3s ease-in-out infinite;
+      }
+
+      .animate-drop {
+        animation: drop 1.5s cubic-bezier(0.5, 0, 1, 1) forwards;
+        pointer-events: none;
       }
 
       .scrollbar-hide::-webkit-scrollbar {

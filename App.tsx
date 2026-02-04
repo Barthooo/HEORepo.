@@ -1,9 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ResourceCard from './components/ResourceCard';
 import AdminDashboard from './components/AdminDashboard';
 import { COLLECTIONS as initialCollections, RESOURCES as initialResources, TAGLINE_WORDS as initialTaglines, REPO_VERSION } from './data';
-import { Resource, Collection, Theme, Submission } from './types';
+import { Resource, Collection, Theme } from './types';
 
 const BRAND_BLUE = '#2563EB';
 const DARK_NAVY = '#121A26';
@@ -11,7 +12,7 @@ const DARK_NAVY = '#121A26';
 const t = {
   welcome: "Welcome to",
   intro: "The repository of open-source tools & resources for Health Economics and Outcomes Research",
-  select: "Select a collection to begin",
+  select: "Select a collection to begin 👇",
   contributeBtn: "Contribute to HEORepo",
   archive: "Archive",
   vault: "Vault",
@@ -33,16 +34,17 @@ const t = {
   cancel: "Cancel",
   confirm: "Confirm",
   contributeTitle: "Contribute",
-  contributeDesc: "Suggest a high-quality HEOR resource.",
+  contributeDesc: "Suggest high-quality HEOR resources. Please input your suggestions below, then click 'Export CSV' and email the resulting file to contact@heorepo.com for review.",
   title: "Title",
   url: "URL",
   suggestedCol: "Suggested Collection",
   description: "Description",
   yourName: "Your Name",
   creditName: "Credit my name",
-  submit: "Submit",
-  subReceived: "Submission Received",
-  subReceivedDesc: "Thank you! Our curators will review your contribution shortly.",
+  addToList: "Add to List",
+  exportCsv: "Export CSV",
+  subReceived: "Export Successful",
+  subReceivedDesc: "CSV exported. Please email it to contact@heorepo.com",
   allResources: "All Resources"
 };
 
@@ -60,18 +62,24 @@ const isValidLink = (url: string): boolean => {
   }
 };
 
+const escapeCSV = (val: string | undefined): string => {
+  if (!val) return '""';
+  const str = val.toString().replace(/"/g, '""');
+  return `"${str}"`;
+};
+
 const App: React.FC = () => {
   const [activeTheme, setActiveTheme] = useState<string>('landing');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDotDropped, setIsDotDropped] = useState(false);
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
 
-  // VERSION SYNC LOGIC
   const shouldResetCache = useMemo(() => {
     const savedVersionStr = localStorage.getItem('heo_repo_version');
     const savedVersion = savedVersionStr ? parseInt(savedVersionStr) : 0;
@@ -95,13 +103,6 @@ const App: React.FC = () => {
     } catch { return initialResources; }
   });
   
-  const [submissions, setSubmissions] = useState<Submission[]>(() => {
-    try {
-      const saved = localStorage.getItem('heo_submissions');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
-  
   const [taglineWords, setTaglineWords] = useState<string[]>(() => {
     try {
       if (shouldResetCache) return initialTaglines;
@@ -110,7 +111,6 @@ const App: React.FC = () => {
     } catch { return initialTaglines; }
   });
 
-  // Magic Keyword Trigger for Admin Portal
   useEffect(() => {
     if (searchQuery.toLowerCase() === 'admin') {
       setSearchQuery('');
@@ -122,17 +122,16 @@ const App: React.FC = () => {
     try {
       localStorage.setItem('heo_collections', JSON.stringify(collections));
       localStorage.setItem('heo_resources', JSON.stringify(resources));
-      localStorage.setItem('heo_submissions', JSON.stringify(submissions));
       localStorage.setItem('heo_tagline', JSON.stringify(taglineWords));
       localStorage.setItem('heo_repo_version', (REPO_VERSION || 0).toString());
-    } catch (e) {
-      console.error("Storage Error: Local persistence failed.", e);
-    }
-  }, [collections, resources, submissions, taglineWords]);
+    } catch (e) {}
+  }, [collections, resources, taglineWords]);
 
   useEffect(() => {
-    // We keep 'all' as the default selected subcategory when changing theme
     setActiveSubCategory('all');
+    if (activeTheme !== 'landing') {
+      setIsDotDropped(false);
+    }
   }, [activeTheme]);
 
   const handleLogin = () => {
@@ -155,6 +154,7 @@ const App: React.FC = () => {
   };
 
   const [showContributeModal, setShowContributeModal] = useState(false);
+  const [suggestionList, setSuggestionList] = useState<any[]>([]);
   const [contributionData, setContributionData] = useState({ 
     title: '', 
     url: '', 
@@ -165,38 +165,69 @@ const App: React.FC = () => {
   });
   const [contributionSuccess, setContributionSuccess] = useState(false);
 
-  const handlePublicContribute = () => {
+  const handleAddSuggestionToList = () => {
+    if (!contributionData.title || !contributionData.url) {
+      alert("Please provide at least a title and a valid URL.");
+      return;
+    }
     if (!isValidLink(contributionData.url)) {
       alert("Please provide a secure and valid URL.");
       return;
     }
 
-    const newSubmission: Submission = {
-      id: Math.random().toString(36).substr(2, 9),
+    setSuggestionList(prev => [...prev, {
       title: sanitizeData(contributionData.title),
       url: contributionData.url,
       description: sanitizeData(contributionData.description),
       userName: sanitizeData(contributionData.userName),
       category: contributionData.category,
-      wantsCredit: contributionData.wantsCredit,
-      submittedDate: new Date().toLocaleDateString('en-GB')
-    };
-    
-    setSubmissions(prev => [newSubmission, ...prev]);
+      wantsCredit: contributionData.wantsCredit
+    }]);
+
+    setContributionData({ 
+      title: '', 
+      url: '', 
+      description: '', 
+      userName: contributionData.userName, 
+      category: Theme.GENERAL, 
+      wantsCredit: contributionData.wantsCredit 
+    });
+  };
+
+  const handleRemoveFromList = (idx: number) => {
+    setSuggestionList(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleExportCSV = () => {
+    if (suggestionList.length === 0) {
+      alert("Add at least one suggestion to the list before exporting.");
+      return;
+    }
+
+    const headers = ['Title', 'Description', 'URL', 'Contributor', 'Category', 'SubCategory'];
+    const csvRows = suggestionList.map(item => [
+      escapeCSV(item.title),
+      escapeCSV(item.description),
+      escapeCSV(item.url),
+      escapeCSV(item.wantsCredit ? item.userName : 'Anonymous'),
+      escapeCSV(item.category),
+      escapeCSV('all')
+    ].join(","));
+
+    const csvContent = [headers.join(","), ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `heorepo_suggestions_${new Date().getTime()}.csv`);
+    link.click();
+
     setContributionSuccess(true);
-    
     setTimeout(() => {
       setShowContributeModal(false);
       setContributionSuccess(false);
-      setContributionData({ 
-        title: '', 
-        url: '', 
-        description: '', 
-        userName: '', 
-        category: Theme.GENERAL, 
-        wantsCredit: true 
-  });
-    }, 2000);
+      setSuggestionList([]);
+    }, 4000);
   };
 
   const filteredResources = useMemo(() => {
@@ -209,16 +240,11 @@ const App: React.FC = () => {
     });
   }, [activeTheme, activeSubCategory, searchQuery, resources]);
 
-  const currentCollection = useMemo(() => 
-    collections.find(c => c.id === activeTheme), 
-    [activeTheme, collections]
-  );
-
+  const currentCollection = useMemo(() => collections.find(c => c.id === activeTheme), [activeTheme, collections]);
   const isAdminDeckActive = activeTheme === 'admin-deck' && isAdmin;
   const isLandingActive = activeTheme === 'landing';
   const collectionName = isAdminDeckActive ? t.management : (activeTheme === 'all' ? t.archive : currentCollection?.name || t.archive);
   
-  // Create a display list of subcategories with "All" at the end
   const subCategoryFilters = useMemo(() => {
     if (!currentCollection) return [];
     return [...(currentCollection.subCategories || []), 'All'];
@@ -227,45 +253,21 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen bg-[#FCFDFF] text-slate-900 overflow-hidden font-['Inter'] antialiased relative">
       <Sidebar 
-        collections={collections} 
-        activeTheme={activeTheme} 
-        onThemeSelect={setActiveTheme} 
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onAdminClick={() => isAdmin ? handleLogout() : null}
-        isAdminActive={isAdmin}
-        notificationCount={submissions.length}
-        taglineWords={taglineWords}
+        collections={collections} activeTheme={activeTheme} onThemeSelect={setActiveTheme} 
+        isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}
+        onAdminClick={() => isAdmin ? handleLogout() : null} isAdminActive={isAdmin} taglineWords={taglineWords}
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
         {!isLandingActive && (
           <header className="bg-white px-4 md:px-8 pt-4 md:pt-8 pb-5 border-b border-[#F1F5F9]/60 relative z-30">
             <div className="max-w-[1440px] mx-auto">
-              {/* Mobile Header */}
               <div className="flex items-center justify-between mb-4 lg:hidden">
                 <div className="flex items-center font-[900] text-[26px] tracking-[-0.04em] leading-none select-none cursor-pointer" onClick={() => setActiveTheme('landing')}>
                   <span style={{ color: DARK_NAVY }}>HEO</span>
-                  <span style={{ 
-                    backgroundImage: `linear-gradient(to right, ${DARK_NAVY} 50%, ${BRAND_BLUE} 50%)`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    display: 'inline-block',
-                    position: 'relative',
-                    padding: '0 0.2em',
-                    margin: '0 -0.2em'
-                  }}>R</span>
+                  <span style={{ backgroundImage: `linear-gradient(to right, ${DARK_NAVY} 50%, ${BRAND_BLUE} 50%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block', position: 'relative', padding: '0 0.2em', margin: '0 -0.2em' }}>R</span>
                   <span style={{ color: BRAND_BLUE }}>epo</span>
-                  {/* RESTORED DOT */}
-                  <div 
-                    className="ml-[2px] self-end" 
-                    style={{ 
-                      backgroundColor: BRAND_BLUE, 
-                      width: '6.5px', 
-                      height: '6.5px',
-                      marginBottom: '3px' 
-                    }}
-                  ></div>
+                  <div className="ml-[2px] self-end" style={{ backgroundColor: BRAND_BLUE, width: '6.5px', height: '6.5px', marginBottom: '3px' }}></div>
                 </div>
                 <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-slate-50 rounded-xl transition-colors"><svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
               </div>
@@ -292,26 +294,14 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Sub Category Filters with Mobile Optimizations */}
               {!isAdminDeckActive && subCategoryFilters.length > 0 && (
                 <div className="min-h-[48px] flex items-center overflow-hidden">
                   <div className="flex items-center gap-2 md:gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
                     {subCategoryFilters.map((sub) => {
                       const filterValue = sub.toLowerCase() === 'all' ? 'all' : sub;
                       const isSelected = activeSubCategory === filterValue;
-                      
                       return (
-                        <button 
-                          key={sub} 
-                          onClick={() => setActiveSubCategory(filterValue)} 
-                          className={`px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-[800] tracking-[0.1em] uppercase whitespace-nowrap active:scale-95 border transition-all duration-300 snap-center ${
-                            isSelected 
-                            ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-lg shadow-slate-200' 
-                            : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'
-                          }`}
-                        >
-                          {sub}
-                        </button>
+                        <button key={sub} onClick={() => setActiveSubCategory(filterValue)} className={`px-5 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-[800] tracking-[0.1em] uppercase whitespace-nowrap active:scale-95 border transition-all duration-300 snap-center ${isSelected ? 'bg-[#0F172A] text-white border-[#0F172A] shadow-lg shadow-slate-200' : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1]'}`}>{sub}</button>
                       );
                     })}
                   </div>
@@ -339,10 +329,16 @@ const App: React.FC = () => {
                     <span style={{ color: DARK_NAVY }}>HEO</span>
                     <span style={{ backgroundImage: `linear-gradient(to right, ${DARK_NAVY} 50%, ${BRAND_BLUE} 50%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block', position: 'relative', padding: '0 0.2em', margin: '0 -0.2em' }}>R</span>
                     <span style={{ color: BRAND_BLUE }}>epo</span>
-                    <div className="ml-[4px] md:ml-[10px] self-end" style={{ backgroundColor: BRAND_BLUE, width: '14px', height: '14px', marginBottom: '8px' }}></div>
+                    <div 
+                      onClick={() => setIsDotDropped(true)}
+                      className={`ml-[4px] md:ml-[10px] self-end cursor-pointer transition-transform hover:scale-125 ${isDotDropped ? 'animate-drop' : ''}`} 
+                      style={{ backgroundColor: BRAND_BLUE, width: '14px', height: '14px', marginBottom: '8px' }}
+                    ></div>
                   </div>
                   <div className="max-w-3xl flex flex-col items-center px-4">
-                    <p className="text-[14px] md:text-[19px] text-slate-500 font-medium mt-4 md:mt-6 leading-relaxed">The repository of open-source tools & resources <br className="hidden md:block" /> for <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>H</span>ealth <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>E</span>conomics and <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>O</span>utcomes <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>R</span>esearch.</p>
+                    <p className="text-[14px] md:text-[19px] text-slate-500 font-medium mt-4 md:mt-6 leading-relaxed">
+                      The repository of open-source tools & resources <br /> for <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>H</span>ealth <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>E</span>conomics and <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>O</span>utcomes <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>R</span>esearch.
+                    </p>
                   </div>
                   <div className="mt-12 flex flex-col items-center gap-6 w-full max-w-xl px-4 relative z-10">
                     <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">{t.select}</p>
@@ -358,12 +354,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             ) : isAdminDeckActive ? (
-              <AdminDashboard 
-                resources={resources} setResources={setResources}
-                collections={collections} setCollections={setCollections}
-                submissions={submissions} setSubmissions={setSubmissions}
-                taglineWords={taglineWords} setTaglineWords={setTaglineWords}
-              />
+              <AdminDashboard resources={resources} setResources={setResources} collections={collections} setCollections={setCollections} taglineWords={taglineWords} setTaglineWords={setTaglineWords} />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 auto-rows-fr">
                 {filteredResources.length > 0 ? filteredResources.map((res, idx) => (<ResourceCard key={res.id} resource={res} index={idx} />)) : (
@@ -383,24 +374,14 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-[32px] p-8 md:p-10 w-full max-w-md shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300">
             <h2 className="text-2xl font-black text-slate-900 mb-2">{t.adminPortal}</h2>
-            <p className="text-slate-500 text-sm mb-6">{t.adminPortalDesc}</p>
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.password}</label>
-                <input 
-                  type="text" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()} 
-                  className={`w-full px-6 py-4 rounded-2xl bg-slate-50 border ${loginError ? 'border-red-500' : 'border-slate-100'} focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none transition-all font-bold`} 
-                  placeholder="Enter Password" 
-                  autoFocus 
-                />
+                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} className={`w-full px-6 py-4 rounded-2xl bg-slate-50 border ${loginError ? 'border-red-500' : 'border-slate-100'} focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none transition-all font-bold`} placeholder="Enter Password" autoFocus />
                 {loginError && <p className="text-red-500 text-[11px] font-bold mt-2 ml-1">{t.incorrectPassword}</p>}
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowLoginModal(false)} className="flex-1 px-6 py-4 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all">{t.cancel}</button>
-                <button onClick={handleLogin} className="flex-1 px-6 py-4 rounded-2xl bg-[#2563EB] text-white font-bold hover:opacity-90 shadow-lg shadow-blue-500/20 transition-all">{t.confirm}</button>
+                <button onClick={handleLogin} className="flex-1 px-6 py-4 rounded-2xl bg-[#2563EB] text-white font-bold hover:opacity-90 transition-all">{t.confirm}</button>
               </div>
             </div>
           </div>
@@ -409,7 +390,7 @@ const App: React.FC = () => {
 
       {showContributeModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300 overflow-y-auto">
-          <div className="bg-white rounded-[32px] p-8 md:p-10 w-full max-w-lg shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300 my-8">
+          <div className="bg-white rounded-[32px] p-8 md:p-10 w-full max-w-2xl shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300 my-8">
             {contributionSuccess ? (
               <div className="text-center py-10 animate-in zoom-in duration-500">
                 <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6"><svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7" /></svg></div>
@@ -419,18 +400,66 @@ const App: React.FC = () => {
             ) : (
               <>
                 <div className="flex justify-between items-start mb-6">
-                  <div><h2 className="text-2xl font-black text-slate-900 mb-1">{t.contributeTitle}</h2><p className="text-slate-500 text-sm">{t.contributeDesc}</p></div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900 mb-1">{t.contributeTitle}</h2>
+                    <p className="text-slate-500 text-sm leading-relaxed">{t.contributeDesc}</p>
+                  </div>
                   <button onClick={() => setShowContributeModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
-                <div className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.title}</label><input className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none font-bold text-sm" value={contributionData.title} onChange={e => setContributionData({...contributionData, title: e.target.value})} placeholder="Resource name" /></div>
-                    <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.url}</label><input className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none font-bold text-sm" value={contributionData.url} onChange={e => setContributionData({...contributionData, url: e.target.value})} placeholder="https://..." /></div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="bg-slate-50/50 p-6 rounded-[24px] border border-slate-100 space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.title}</label>
+                        <input className="w-full px-5 py-3 rounded-xl bg-white border border-slate-200 focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-sm" value={contributionData.title} onChange={e => setContributionData({...contributionData, title: e.target.value})} placeholder="Resource name" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.url}</label>
+                        <input className="w-full px-5 py-3 rounded-xl bg-white border border-slate-200 focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-sm" value={contributionData.url} onChange={e => setContributionData({...contributionData, url: e.target.value})} placeholder="https://..." />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.suggestedCol}</label>
+                        <select className="w-full px-5 py-3 rounded-xl bg-white border border-slate-200 focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-sm" value={contributionData.category} onChange={e => setContributionData({...contributionData, category: e.target.value as any})}>
+                          {collections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.description}</label>
+                        <textarea rows={2} className="w-full px-5 py-3 rounded-xl bg-white border border-slate-200 focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-sm resize-none" value={contributionData.description} onChange={e => setContributionData({...contributionData, description: e.target.value})} placeholder="Briefly describe..." />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.yourName}</label>
+                        <input className="w-full px-5 py-3 rounded-xl bg-white border border-slate-200 font-bold text-sm mb-2" value={contributionData.userName} onChange={e => setContributionData({...contributionData, userName: e.target.value})} placeholder="Your Name" />
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 rounded" checked={contributionData.wantsCredit} onChange={e => setContributionData({...contributionData, wantsCredit: e.target.checked})} />
+                          <span className="text-xs font-bold text-slate-500">{t.creditName}</span>
+                        </label>
+                      </div>
+                      <button onClick={handleAddSuggestionToList} className="w-full bg-[#0F172A] text-white py-3 rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all">Add to List</button>
+                    </div>
                   </div>
-                  <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.suggestedCol}</label><select className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none font-bold text-sm appearance-none" value={contributionData.category} onChange={e => setContributionData({...contributionData, category: e.target.value as any})}>{collections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-                  <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.description}</label><textarea rows={3} className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none font-bold text-sm resize-none" value={contributionData.description} onChange={e => setContributionData({...contributionData, description: e.target.value})} placeholder="What makes this resource valuable?" /></div>
-                  <div className="pt-2"><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t.yourName}</label><div className="flex flex-col sm:flex-row gap-4"><input className="flex-1 px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 focus:bg-white outline-none font-bold text-sm" value={contributionData.userName} onChange={e => setContributionData({...contributionData, userName: e.target.value})} placeholder="Name" /><label className="flex items-center gap-3 cursor-pointer select-none px-4"><input type="checkbox" className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500" checked={contributionData.wantsCredit} onChange={e => setContributionData({...contributionData, wantsCredit: e.target.checked})} /><span className="text-xs font-bold text-slate-600">{t.creditName}</span></label></div></div>
-                  <button onClick={handlePublicContribute} className="w-full mt-4 bg-[#2563EB] text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:opacity-90 active:scale-[0.98] transition-all">{t.submit}</button>
+
+                  <div className="flex flex-col h-full min-h-[400px]">
+                    <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-hide">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex justify-between">
+                        <span>List of Suggestions</span>
+                        <span className="text-blue-600">{suggestionList.length}</span>
+                      </div>
+                      {suggestionList.length === 0 ? (
+                        <div className="h-full min-h-[200px] border-2 border-dashed border-slate-100 rounded-[24px] flex items-center justify-center text-slate-300 font-bold text-xs italic">Empty list.</div>
+                      ) : (
+                        suggestionList.map((item, idx) => (
+                          <div key={idx} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm relative group">
+                            <button onClick={() => handleRemoveFromList(idx)} className="absolute top-2 right-2 p-1 text-slate-300 hover:text-red-500"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg></button>
+                            <div className="font-black text-slate-800 text-[13px] truncate pr-6">{item.title}</div>
+                            <div className="text-[10px] text-blue-500 font-bold truncate">{item.url}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <button onClick={handleExportCSV} disabled={suggestionList.length === 0} className={`w-full mt-6 py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all ${suggestionList.length > 0 ? 'bg-[#2563EB] text-white shadow-blue-500/20 hover:opacity-90' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}>Export CSV</button>
+                  </div>
                 </div>
               </>
             )}

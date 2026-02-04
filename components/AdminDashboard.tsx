@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Resource, Collection, Theme, Submission } from '../types';
+import { Resource, Collection, Theme } from '../types';
 import { REPO_VERSION } from '../data';
 
 interface AdminDashboardProps {
@@ -8,11 +8,9 @@ interface AdminDashboardProps {
   setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
   collections: Collection[];
   setCollections: React.Dispatch<React.SetStateAction<Collection[]>>;
-  submissions: Submission[];
-  setSubmissions: React.Dispatch<React.SetStateAction<Submission[]>>;
   taglineWords: string[];
   setTaglineWords: React.Dispatch<React.SetStateAction<string[]>>;
-  initialTab?: 'resources' | 'collections' | 'mailbox' | 'settings';
+  initialTab?: 'resources' | 'collections' | 'settings';
 }
 
 const sanitizeInput = (str: string): string => {
@@ -76,21 +74,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   setResources, 
   collections, 
   setCollections, 
-  submissions, 
-  setSubmissions, 
   taglineWords, 
   setTaglineWords, 
   initialTab = 'resources' 
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'resources' | 'collections' | 'mailbox' | 'settings'>(initialTab as any);
+  const [activeTab, setActiveTab] = useState<'resources' | 'collections' | 'settings'>(initialTab as any);
   const [newTaglineWord, setNewTaglineWord] = useState('');
   const [newSubCategory, setNewSubCategory] = useState('');
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // For visual sync indicator
   const localVersion = localStorage.getItem('heo_repo_version') || '0';
   const sourceVersion = (REPO_VERSION || 0).toString();
   const isOutOfSync = parseInt(sourceVersion) > parseInt(localVersion);
@@ -119,12 +114,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const currentTimestamp = Date.now();
 
       const fileContent = `import { Collection, Resource, Theme } from './types';
-
-/**
- * HEORepo Repository Data
- * Generated: ${new Date().toLocaleString()}
- * REPO_VERSION is used to trigger cache resets for all users when you push to GitHub.
- */
 
 export const REPO_VERSION = ${currentTimestamp};
 
@@ -382,36 +371,6 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
     setActiveTab('collections');
   };
 
-  const handleApproveSubmission = (sub: Submission) => {
-    try {
-      const urlToUse = sub.url.startsWith('http') ? sub.url : `https://${sub.url}`;
-      const domain = new URL(urlToUse).hostname.toUpperCase();
-      const newRes: Resource = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: sub.title,
-        description: sub.description,
-        contributor: sub.wantsCredit ? sub.userName : 'Anonymous',
-        url: urlToUse,
-        domain,
-        imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
-        addedDate: new Date().toLocaleDateString('en-GB'),
-        category: sub.category || Theme.GENERAL,
-        subCategory: 'all'
-      };
-      setResources(prev => [newRes, ...prev]);
-      setSubmissions(prev => prev.filter(s => s.id !== sub.id));
-      setActiveTab('resources');
-      setEditingId(newRes.id);
-      showStatus("Suggestion approved.");
-    } catch (err) {
-      alert("Invalid URL.");
-    }
-  };
-
-  const handleRejectSubmission = (id: string) => {
-    if (window.confirm("Discard?")) setSubmissions(prev => prev.filter(s => s.id !== id));
-  };
-
   const handleAddTagline = () => {
     const cleanWord = sanitizeInput(newTaglineWord).trim();
     if (cleanWord) {
@@ -427,16 +386,13 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
   return (
     <div className="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-xl overflow-hidden animate-card-entry ring-1 ring-black/5">
       <div className="flex bg-slate-50/50 border-b border-slate-200 p-2 gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide">
-        {['resources', 'collections', 'mailbox', 'settings'].map((tab) => (
+        {['resources', 'collections', 'settings'].map((tab) => (
           <button 
             key={tab}
             onClick={() => setActiveTab(tab as any)} 
             className={`flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-xl md:rounded-2xl text-[10px] md:text-[12px] font-[800] uppercase tracking-wider transition-all duration-300 whitespace-nowrap relative ${activeTab === tab ? 'bg-white text-[#2563EB] shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
           >
             {tab === 'resources' ? 'Vault' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-            {tab === 'mailbox' && submissions.length > 0 && (
-              <span className="ml-2 bg-red-500 text-white text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-full ring-2 ring-white">{submissions.length}</span>
-            )}
           </button>
         ))}
       </div>
@@ -539,7 +495,7 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
                                 <button onClick={() => moveResource(idx, 'down')} disabled={idx === resources.length - 1} className="p-1 hover:bg-slate-100 rounded text-slate-300 hover:text-[#2563EB] disabled:opacity-20 transition-all cursor-pointer"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M19 9l-7 7-7-7" /></svg></button>
                               </div>
                               <button onClick={() => setEditingId(isEditing ? null : res.id)} className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-[10px] md:text-[12px] font-bold transition-all ${isEditing ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>{isEditing ? 'Save' : 'Adjust'}</button>
-                              <button onClick={() => handleDeleteResource(res.id)} className="p-1.5 md:p-2 bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl cursor-pointer"><svg className="w-4 h-4 md:w-5 md:h-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                              <button onClick={() => handleDeleteResource(res.id)} className="p-1.5 md:p-2.5 bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl cursor-pointer"><svg className="w-4 h-4 md:w-5 md:h-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                             </div>
                           </td>
                         </tr>
@@ -589,37 +545,17 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
                           {(col.subCategories || []).map((sub, index) => (
                             <div key={`${col.id}-sub-${index}`} className="flex items-center gap-2 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full group/sub transition-all">
                               {isEditing && (
-                                <button 
-                                  onClick={() => moveSubCategory(col.id, index, 'left')} 
-                                  disabled={index === 0}
-                                  className="text-slate-300 hover:text-blue-500 disabled:opacity-20 cursor-pointer"
-                                >
-                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M15 19l-7-7 7-7" /></svg>
-                                </button>
+                                <button onClick={() => moveSubCategory(col.id, index, 'left')} disabled={index === 0} className="text-slate-300 hover:text-blue-500 disabled:opacity-20 cursor-pointer"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M15 19l-7-7 7-7" /></svg></button>
                               )}
-                              
                               {isEditing ? (
-                                <input 
-                                  className="text-[11px] font-bold text-blue-600 bg-transparent outline-none w-24 tracking-tight" 
-                                  value={sub} 
-                                  onChange={(e) => handleUpdateSubCategoryName(col.id, index, e.target.value)} 
-                                />
+                                <input className="text-[11px] font-bold text-blue-600 bg-transparent outline-none w-24 tracking-tight" value={sub} onChange={(e) => handleUpdateSubCategoryName(col.id, index, e.target.value)} />
                               ) : (
                                 <span className="text-[11px] font-bold text-slate-600 tracking-tight">{sub}</span>
                               )}
-
                               {isEditing && (
                                 <div className="flex items-center gap-1.5 ml-1">
-                                  <button 
-                                    onClick={() => moveSubCategory(col.id, index, 'right')} 
-                                    disabled={index === (col.subCategories?.length || 0) - 1}
-                                    className="text-slate-300 hover:text-blue-500 disabled:opacity-20 cursor-pointer"
-                                  >
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M9 5l7 7-7 7" /></svg>
-                                  </button>
-                                  <button onClick={() => handleRemoveSubCategory(col.id, index)} className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer">
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg>
-                                  </button>
+                                  <button onClick={() => moveSubCategory(col.id, index, 'right')} disabled={index === (col.subCategories?.length || 0) - 1} className="text-slate-300 hover:text-blue-500 disabled:opacity-20 cursor-pointer"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M9 5l7 7-7 7" /></svg></button>
+                                  <button onClick={() => handleRemoveSubCategory(col.id, index)} className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg></button>
                                 </div>
                               )}
                             </div>
@@ -631,7 +567,6 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
                             <button onClick={() => handleAddSubCategory(col.id)} className="px-4 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">Add</button>
                           </div>
                         )}
-                        <p className="mt-4 text-[11px] text-slate-400 font-medium italic">"All" is a system-default filter and is always visible in the vault.</p>
                       </div>
                     </div>
                   </div>
@@ -641,51 +576,9 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
           </div>
         )}
 
-        {activeTab === 'mailbox' && (
-          <div className="space-y-6 md:space-y-8">
-            <h2 className="text-[24px] md:text-[28px] font-[900] text-[#0F172A] tracking-tight">Community Suggestions</h2>
-            {submissions.length === 0 ? (
-              <div className="py-16 md:py-20 text-center text-slate-400 bg-slate-50/50 rounded-[20px] md:rounded-[32px] border border-dashed border-slate-200">
-                <p className="font-black uppercase tracking-widest text-[10px] md:text-[11px]">Inbox is clear.</p>
-              </div>
-            ) : (
-              <div className="space-y-4 md:space-y-6">
-                {submissions.map(sub => (
-                  <div key={sub.id} className="p-5 md:p-8 rounded-[20px] md:rounded-[32px] border border-slate-100 bg-white hover:border-blue-200 transition-all shadow-sm">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4 md:mb-6">
-                      <div className="space-y-2 md:space-y-3">
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <span className="text-[8px] md:text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full">NEW</span>
-                          <h4 className="text-[16px] md:text-[20px] font-black text-[#0F172A] truncate">{sub.title}</h4>
-                        </div>
-                        <p className="text-slate-500 text-[13px] md:text-sm leading-relaxed max-w-2xl">{sub.description}</p>
-                      </div>
-                      <div className="text-left md:text-right shrink-0">
-                        <div className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">FROM</div>
-                        <div className="text-[13px] md:text-[14px] font-black text-[#0F172A]">{sub.userName}</div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-slate-50 pt-4 md:pt-6">
-                      <div className="flex items-center gap-2 text-[11px] md:text-[12px] font-bold text-blue-500 truncate max-w-full md:max-w-md">
-                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                        <span className="truncate">{sub.url}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => handleApproveSubmission(sub)} className="flex-1 sm:flex-none px-4 md:px-8 py-2 md:py-3 bg-[#2563EB] text-white rounded-full text-[11px] md:text-[12px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all">Accept</button>
-                        <button onClick={() => handleRejectSubmission(sub.id)} className="flex-1 sm:flex-none px-4 md:px-8 py-2 md:py-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full text-[11px] md:text-[12px] font-black uppercase tracking-widest transition-all">Discard</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {activeTab === 'settings' && (
           <div className="space-y-6 md:space-y-8">
             <h2 className="text-[24px] md:text-[28px] font-[900] text-[#0F172A] tracking-tight">Sync & Repository Settings</h2>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-slate-50 rounded-[20px] md:rounded-[32px] p-6 md:p-10 border border-slate-100 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">
@@ -697,7 +590,6 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
                     {isOutOfSync ? 'Sync Needed' : 'In Sync'}
                   </div>
                 </div>
-
                 <div className="bg-white/50 p-4 rounded-2xl border border-slate-200 mb-6 space-y-3">
                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
                     <span className="text-slate-400">Source (data.ts):</span>
@@ -708,35 +600,24 @@ export const TAGLINE_WORDS: string[] = ${taglineStr};
                     <span className="text-slate-800">{localVersion}</span>
                   </div>
                 </div>
-
-                <p className="text-slate-500 text-[13px] md:text-sm mb-6 flex-1">
-                  Replace the file of the same name in your GitHub repository. This triggers a cache reset for all users.
-                </p>
-                <div className="flex flex-col gap-3">
-                  <button onClick={handleExportDataFile} className="w-full bg-[#0F172A] text-white px-8 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2 group">
-                    <svg className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Export data.ts for GitHub
-                  </button>
-                  <button onClick={handleResetCache} className="w-full bg-white border border-red-200 text-red-500 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    Reset Browser Cache
-                  </button>
+                <div className="flex flex-col gap-3 mt-auto">
+                  <button onClick={handleExportDataFile} className="w-full bg-[#0F172A] text-white px-8 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-lg hover:bg-black transition-all">Export data.ts</button>
+                  <button onClick={handleResetCache} className="w-full bg-white border border-red-200 text-red-500 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-red-50 transition-all">Reset Cache</button>
                 </div>
               </div>
 
               <div className="bg-slate-50 rounded-[20px] md:rounded-[32px] p-6 md:p-10 border border-slate-100">
                 <h3 className="text-lg md:text-xl font-black text-[#0F172A] mb-1.5 md:mb-2">Tagline Keywords</h3>
-                <p className="text-slate-500 text-[13px] md:text-sm mb-6 md:mb-8">Customize the cycling terms in the sidebar.</p>
                 <div className="flex flex-wrap gap-2 md:gap-3 mb-6 md:mb-8">
                   {taglineWords.map((word, idx) => (
-                    <div key={idx} className="flex items-center gap-2 md:gap-3 bg-white px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm group hover:border-blue-300 transition-all">
+                    <div key={idx} className="flex items-center gap-2 md:gap-3 bg-white px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm">
                       <span className="text-[13px] md:text-[15px] font-black text-slate-800 tracking-tight">{word}</span>
-                      <button onClick={() => handleRemoveTagline(idx)} className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"><svg className="w-4 h-4 md:w-5 md:h-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg></button>
+                      <button onClick={() => handleRemoveTagline(idx)} className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"><svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg></button>
                     </div>
                   ))}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
-                  <input className="flex-1 px-5 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white border border-slate-200 outline-none focus:ring-4 focus:ring-[#2563EB]/10 transition-all font-bold text-sm md:text-base" placeholder="Add Keyword..." value={newTaglineWord} onChange={(e) => setNewTaglineWord(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddTagline()} />
+                  <input className="flex-1 px-5 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white border border-slate-200 outline-none font-bold" placeholder="Add Keyword..." value={newTaglineWord} onChange={(e) => setNewTaglineWord(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddTagline()} />
                   <button onClick={handleAddTagline} className="px-6 md:px-8 py-3 md:py-4 bg-[#0F172A] text-white rounded-xl md:rounded-2xl text-[12px] md:text-[14px] font-black uppercase tracking-widest hover:bg-black transition-all">Add</button>
                 </div>
               </div>

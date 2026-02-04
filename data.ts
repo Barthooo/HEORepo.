@@ -2,35 +2,36 @@ import { Collection, Resource, Theme } from './types';
 
 /**
  * HEORepo Repository Data
- * Generated: 30/01/2026, 13:33:32
+ * Updated: 28/01/2026
  * REPO_VERSION is used to trigger cache resets for all users when you push to GitHub.
  */
 
-export const REPO_VERSION = 1769751212126;
+export const REPO_VERSION = 1769663499949;
 
 export const COLLECTIONS: Collection[] = [
   {
-    "id": "general",
-    "name": "HEOR General",
-    "icon": "📦",
-    "description": "Broad HEOR resources and foundational materials.",
-    "subCategories": [
-      "Intro to HEOR"
-    ]
-  },
-  {
-    "id": "modelling",
+    "id": Theme.ECONOMIC_MODELING,
     "name": "Modelling",
     "icon": "⚖️",
     "description": "Economic modeling, cost-effectiveness, and simulations.",
     "subCategories": [
       "Decision Tree",
       "Markov",
-      "PartSA"
+      "PSA"
     ]
   },
   {
-    "id": "meta-analysis",
+    "id": Theme.SURVIVAL_ANALYSIS,
+    "name": "Survival Analysis",
+    "icon": "📈",
+    "description": "Evidence-based survival extrapolation and KM analysis.",
+    "subCategories": [
+      "KM-IPD",
+      "Extrapolation"
+    ]
+  },
+  {
+    "id": Theme.SYSTEMATIC_REVIEWS,
     "name": "Meta-Analysis",
     "icon": "⛓️",
     "description": "Evidence synthesis and systematic review methodologies.",
@@ -41,202 +42,15 @@ export const COLLECTIONS: Collection[] = [
     ]
   },
   {
-    "id": "survival-analysis",
-    "name": "Survival Analysis",
-    "icon": "📈",
-    "description": "Evidence-based survival extrapolation and KM analysis.",
-    "subCategories": []
-  },
-  {
-    "id": "custom-7z8un",
-    "name": "HEOR Books",
-    "icon": "📖",
-    "description": "",
+    "id": Theme.GENERAL,
+    "name": "General",
+    "icon": "📦",
+    "description": "Broad HEOR resources and foundational materials.",
     "subCategories": []
   }
 ];
 
 export const RESOURCES: Resource[] = [
-  {
-    "id": "bv8oqx6fe",
-    "title": "PartSA_Youtube tutorial",
-    "description": "A Youtube viedo showing how to run a Probabilistic Sensitivity Analysis (PSA) in Excel using a simple Markov model to compare two treatments' cost-effectiveness by Mirko von Hein.",
-    "url": "https://www.youtube.com/watch?v=fPmQaf_XQDA",
-    "domain": "WWW.YOUTUBE.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "modelling",
-    "subCategory": "PartSA"
-  },
-  {
-    "id": "krf957vpw",
-    "title": "KM-GPT",
-    "description": "An Automated Pipeline for Reconstructing Individual Patient Data from Kaplan-Meier Plots, require OpenAI API Key.",
-    "url": "https://km-gpt.wse.jhu.edu/",
-    "domain": "KM-GPT.WSE.JHU.EDU",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "vwlxwbq1o",
-    "title": "PartSA_Excel template",
-    "description": "A template of PartSA model in Excel by Mvon Hein.",
-    "url": "https://github.com/MvonHein/Partitioned-Survival-Model",
-    "domain": "GITHUB.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "modelling",
-    "subCategory": "PartSA"
-  },
-  {
-    "id": "ofcji2wpa",
-    "title": "PartSA_DARTH",
-    "description": "A repository contains functions useful for conducting partitioned survival analysis in R and provides a few examples.",
-    "url": "https://github.com/DARTH-git/Partitioned-Survival-Analysis/tree/master",
-    "domain": "GITHUB.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "modelling",
-    "subCategory": "PartSA"
-  },
-  {
-    "id": "1blyfid3n",
-    "title": "WebPlotDigitizer",
-    "description": "A free web-based tool to extract numerical data from plots and graph images.",
-    "url": "https://wpd.starrydata2.org/",
-    "domain": "WPD.STARRYDATA2.ORG",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "2dh4h0ex5",
-    "title": "Reconstruct IPD from KM in R",
-    "description": "A step-by-step instructions for executing the Guyot (2012) algorithm to reconstruct IPD from published KM curves in R.",
-    "url": "https://pharmasug.org/download/sde/rtp2023/PharmaSUG-NCSDE_2023-05.pdf",
-    "domain": "PHARMASUG.ORG",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "mdpiug3vw",
-    "title": "IPDfromKM_Shiny",
-    "description": "The accompanying web-based Shiny application of R package IPDfromKM by Liu et al. (2021).",
-    "url": "https://biostatistics.mdanderson.org/shinyapps/IPDfromKM/",
-    "domain": "BIOSTATISTICS.MDANDERSON.ORG",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "2k5e790nh",
-    "title": "IPDfromKM_Tutorial",
-    "description": "The paper with step-to-step tutorial on the R package IPDfromKM and the Shiny by Liu et al. (2021).",
-    "url": "https://link.springer.com/article/10.1186/s12874-021-01308-8",
-    "domain": "LINK.SPRINGER.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "6gucusgit",
-    "title": "SurvInt",
-    "description": "A free, no-code web-based tool to create precise parametric survival extrapolations for economic models.",
-    "url": "https://dgallacher.shinyapps.io/survint/",
-    "domain": "DGALLACHER.SHINYAPPS.IO",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "qrswc1eyi",
-    "title": "SurvInt_Tutorial",
-    "description": "A simple tool to obtain precise parametric survival extrapolations, allows precise parametric survival models to be estimated and carried forward into economic models.",
-    "url": "https://link.springer.com/article/10.1186/s12911-024-02475-6",
-    "domain": "LINK.SPRINGER.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "survival-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "991vpkfwt",
-    "title": "Decision Tree_Python",
-    "description": "A Python-based tool for building and analyzing decision trees in pharmacoeconomics.",
-    "url": "https://github.com/mirsadra/Pharmacoeconomics-Decision-Tree",
-    "domain": "GITHUB.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "modelling",
-    "subCategory": "Decision Tree"
-  },
-  {
-    "id": "ssbe4nfiz",
-    "title": "Malaria Decision Tree model",
-    "description": "A decision tree model to estimate the relative cost-effectiveness of new treatment for Malaria in Kenya, in Excel.",
-    "url": "https://github.com/migleapa/Applied-Methods-of-Cost-effectiveness-Analysis-in-Health-Care",
-    "domain": "GITHUB.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "modelling",
-    "subCategory": "Decision Tree"
-  },
-  {
-    "id": "sv34pl6xc",
-    "title": "Decision Tree quick R tutorial",
-    "description": "Quick tutorial on decision tree modelling, with R codes.",
-    "url": "https://jacobsmithecon.wordpress.com/2023/02/21/decision-tree-modelling-for-cost-effectiveness-analysis-in-r/",
-    "domain": "JACOBSMITHECON.WORDPRESS.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "30/01/2026",
-    "contributor": "Admin",
-    "category": "modelling",
-    "subCategory": "Decision Tree"
-  },
-  {
-    "id": "biiberifj",
-    "title": "Glossary of HE terms_YHEC",
-    "description": "YHEC’s glossary of health economic terms, from A to Z.",
-    "contributor": "Admin",
-    "url": "https://www.yhec.co.uk/resources-and-events/glossary/",
-    "domain": "WWW.YHEC.CO.UK",
-    "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "29/01/2026",
-    "category": "general",
-    "subCategory": "all"
-  },
-  {
-    "id": "ny49akpzc",
-    "title": "Decision Tree tutorials in Excel",
-    "description": "A repository of materials for decision tree tutorials using Microsoft Excel, containing VBA macros for OWSA, and a decision tree builder.",
-    "contributor": "Admin",
-    "url": "https://github.com/mbounthavong/Decision-Tree-tutorials-in-Excel/tree/main",
-    "domain": "GITHUB.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "29/01/2026",
-    "category": "modelling",
-    "subCategory": "Decision Tree"
-  },
   {
     "id": "26ki8shqh",
     "title": "Network Meta-Analysis for Decision-Making",
@@ -246,7 +60,7 @@ export const RESOURCES: Resource[] = [
     "domain": "WWW.AGROPUSTAKA.ID",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "28/01/2026",
-    "category": "meta-analysis",
+    "category": Theme.SYSTEMATIC_REVIEWS,
     "subCategory": "Network Meta-analysis"
   },
   {
@@ -258,8 +72,8 @@ export const RESOURCES: Resource[] = [
     "domain": "GITHUB.COM",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "28/01/2026",
-    "category": "modelling",
-    "subCategory": "all"
+    "category": Theme.ECONOMIC_MODELING,
+    "subCategory": "PSA"
   },
   {
     "id": "anrz5j07v",
@@ -270,7 +84,7 @@ export const RESOURCES: Resource[] = [
     "domain": "WWW.YOUTUBE.COM",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "28/01/2026",
-    "category": "modelling",
+    "category": Theme.ECONOMIC_MODELING,
     "subCategory": "all"
   },
   {
@@ -282,31 +96,31 @@ export const RESOURCES: Resource[] = [
     "domain": "WWW.JISCMAIL.AC.UK",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
-    "category": "general",
+    "category": Theme.GENERAL,
     "subCategory": "all"
   },
   {
     "id": "3bz5y8qpx",
     "title": "Decision tree tutorial_RPubs",
-    "description": "A step-by-step guide that teaches how to build a decision tree from scratch, including estimating costs, outcomes, and ICERs, with R code.",
+    "description": "A detailed, step-by-step guide by Mark Bounthavong that teaches how to build a decision tree from scratch in R, including estimating costs, outcomes, and ICERs.",
     "contributor": "Admin",
     "url": "https://rpubs.com/mbounthavong/decision_tree_model_tutorial",
     "domain": "RPUBS.COM",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
-    "category": "modelling",
+    "category": Theme.ECONOMIC_MODELING,
     "subCategory": "Decision Tree"
   },
   {
     "id": "73le3hc79",
     "title": "Plant A Tree_GEAR",
-    "description": "An Open Access Decision Tree Builder developed by the National University of Singapore (NUS) and HITAP. Allows for the creation of complex decision trees with unlimited branches directly in Excel (Only in Windows).",
+    "description": "An Open Access Decision Tree Builder developed by the National University of Singapore (NUS) and HITAP. Allows for the creation of complex decision trees with unlimited branches directly in Excel.",
     "contributor": "Admin",
     "url": "https://www.gear4health.com/page/i/plant-a-tree",
     "domain": "WWW.GEAR4HEALTH.COM",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
-    "category": "modelling",
+    "category": Theme.ECONOMIC_MODELING,
     "subCategory": "Decision Tree"
   },
   {
@@ -318,7 +132,7 @@ export const RESOURCES: Resource[] = [
     "domain": "GITHUB.COM",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
-    "category": "meta-analysis",
+    "category": Theme.SYSTEMATIC_REVIEWS,
     "subCategory": "all"
   },
   {
@@ -330,7 +144,7 @@ export const RESOURCES: Resource[] = [
     "domain": "SPRINGER.COM",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
-    "category": "modelling",
+    "category": Theme.ECONOMIC_MODELING,
     "subCategory": "all"
   },
   {
@@ -342,7 +156,7 @@ export const RESOURCES: Resource[] = [
     "domain": "DOING-META.GUIDE",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
-    "category": "meta-analysis",
+    "category": Theme.SYSTEMATIC_REVIEWS,
     "subCategory": "Tutorials"
   }
 ];
@@ -355,6 +169,5 @@ export const TAGLINE_WORDS: string[] = [
   "microsimulation",
   "survival analysis",
   "modelling",
-  "extrapolation",
-  "Decision tree"
+  "survival extrapolation"
 ];

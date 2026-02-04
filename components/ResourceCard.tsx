@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Resource } from '../types';
 
 interface ResourceCardProps {
@@ -11,7 +12,18 @@ const LIGHT_SLATE = '#94A3B8';
 const THEME_BLUE = '#2563EB';
 
 const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
-  const [bookmarked, setBookmarked] = useState(resource.isBookmarked || false);
+  // Initialize bookmark state from localStorage
+  const [bookmarked, setBookmarked] = useState(() => {
+    try {
+      const saved = localStorage.getItem('heo_bookmarks');
+      if (!saved) return resource.isBookmarked || false;
+      const list = JSON.parse(saved);
+      return Array.isArray(list) ? list.includes(resource.id) : false;
+    } catch {
+      return false;
+    }
+  });
+
   const [imgSrc, setImgSrc] = useState(`https://s0.wp.com/mshots/v1/${encodeURIComponent(resource.url)}?w=600`);
   const [hasFallback, setHasFallback] = useState(false);
   
@@ -26,6 +38,32 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
     if (!hasFallback) {
       setImgSrc(resource.imageUrl);
       setHasFallback(true);
+    }
+  };
+
+  const toggleBookmark = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const newStatus = !bookmarked;
+    setBookmarked(newStatus);
+    
+    try {
+      const saved = localStorage.getItem('heo_bookmarks');
+      let list = saved ? JSON.parse(saved) : [];
+      if (!Array.isArray(list)) list = [];
+      
+      if (newStatus) {
+        if (!list.includes(resource.id)) {
+          list.push(resource.id);
+        }
+      } else {
+        list = list.filter((id: string) => id !== resource.id);
+      }
+      
+      localStorage.setItem('heo_bookmarks', JSON.stringify(list));
+    } catch (err) {
+      console.error("Failed to save bookmark", err);
     }
   };
 
@@ -80,15 +118,10 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
 
         <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            {/* CALENDAR ICON */}
             <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#F1F5F9] flex items-center justify-center text-[#94A3B8] group-hover:border-blue-100 group-hover:bg-blue-50 group-hover:text-[#2563EB] transition-all duration-500 shadow-sm">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 2V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M16 2V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3.5 9.08997H20.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M11.9955 13.7H12.0045" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M8.29431 13.7H8.30329" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M8.29431 16.7H8.30329" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 2V5M16 2V5M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             
@@ -96,23 +129,17 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
               <span className="font-[800] uppercase tracking-[0.18em] leading-tight mb-0.5" style={{ color: LIGHT_SLATE, fontSize: '10px' }}>UPLOADED</span>
               <span className="font-[900] leading-tight text-[#0F172A] tracking-[-0.01em]" style={{ fontSize: '16px' }}>{resource.addedDate}</span>
               
-              <div className="h-[18px]">
-                {!shouldHideContributor && (
-                  <div className="font-[700] antialiased mt-1" style={{ color: THEME_BLUE, fontSize: '11.5px' }}>
-                    by {resource.contributor}
-                  </div>
-                )}
-              </div>
+              {!shouldHideContributor && (
+                <div className="font-[700] antialiased mt-1" style={{ color: THEME_BLUE, fontSize: '11.5px' }}>
+                  by {resource.contributor}
+                </div>
+              )}
             </div>
           </div>
           
           <div className="flex items-center gap-2">
             <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setBookmarked(!bookmarked);
-              }}
+              onClick={toggleBookmark}
               className="focus:outline-none transition-all duration-300 hover:scale-110 p-2 rounded-xl hover:bg-slate-50 active:scale-90"
               title="Bookmark"
             >

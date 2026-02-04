@@ -1,3 +1,4 @@
+
 export interface Resource {
   id: string;
   title: string;
@@ -12,17 +13,6 @@ export interface Resource {
   fileType?: string;
   status?: 'verified' | 'warning' | 'new';
   isBookmarked?: boolean;
-}
-
-export interface Submission {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  userName: string;
-  submittedDate: string;
-  category?: string;
-  wantsCredit: boolean;
 }
 
 export interface Collection {
