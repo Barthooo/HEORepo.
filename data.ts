@@ -1,12 +1,6 @@
 import { Collection, Resource, Theme } from './types';
 
-/**
- * HEORepo Repository Data
- * Generated: 04/02/2026, 16:01:30
- * REPO_VERSION is used to trigger cache resets for all users when you push to GitHub.
- */
-
-export const REPO_VERSION = 1770192090264;
+export const REPO_VERSION = 1770284453583;
 
 export const COLLECTIONS: Collection[] = [
   {
@@ -16,7 +10,8 @@ export const COLLECTIONS: Collection[] = [
     "description": "Broad HEOR resources and foundational materials.",
     "subCategories": [
       "Intro to HEOR",
-      "Books📖"
+      "Books📖",
+      "Tools & Resources🔧"
     ]
   },
   {
@@ -37,8 +32,7 @@ export const COLLECTIONS: Collection[] = [
     "icon": "⛓️",
     "description": "Evidence synthesis and systematic review methodologies.",
     "subCategories": [
-      "Tutorials",
-      "Resources",
+      "Meta-analysis",
       "Network Meta-analysis"
     ]
   },
@@ -53,16 +47,100 @@ export const COLLECTIONS: Collection[] = [
 
 export const RESOURCES: Resource[] = [
   {
-    "id": "3addwitxk",
-    "title": "NIC",
-    "description": "NICE's Budget Imdel submission template for digital health technologies in Excel.",
-    "url": "https://www.nice.org.orporate/ecd7/resources/budget-impact-template-excel-11189604349",
-    "domain": "WWW.NICE.ORG.ORPORATE",
+    "id": "tx9lqbblp",
+    "title": "Intro to Network meta-analyses_Cochrane",
+    "description": "NMA Chapter of Cochrane Handbook for Systematic Reviews of Interventions, could be used as an intro to NMA.",
+    "url": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-11",
+    "domain": "WWW.COCHRANE.ORG",
     "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "04/02/2026",
-    "contributor": "Yue Xin",
-    "category": "general",
-    "subCategory": "All"
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Network Meta-analysis"
+  },
+  {
+    "id": "c3en8ft5b",
+    "title": "Handbook for Systematic Reviews_Cochrane",
+    "description": "The online version of Cochrane's handbook for systematic reviews of interventions, includes a full chapter on meta-analysis plus many advanced topics.",
+    "url": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current",
+    "domain": "WWW.COCHRANE.ORG",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Meta-analysis"
+  },
+  {
+    "id": "1lza86vlw",
+    "title": "Tutorial: R package meta for meta-analysis",
+    "description": "Tutorial and R codes for performing a meta-analysis with the package {meta}.",
+    "url": "https://cran.r-project.org/web/packages/meta/vignettes/meta-tutorial.pdf",
+    "domain": "CRAN.R-PROJECT.ORG",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Meta-analysis"
+  },
+  {
+    "id": "vkxrtubv1",
+    "title": "Tutorial: R package netmeta for Network meta-analysis",
+    "description": "Tutorial and R codes for performing a Network meta-analysis with the package {netmeta}.",
+    "url": "https://cran.r-project.org/web/packages/netmeta/vignettes/netmeta.pdf",
+    "domain": "CRAN.R-PROJECT.ORG",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Network Meta-analysis"
+  },
+  {
+    "id": "w71p79qbz",
+    "title": "Tutorial: R package metafor for meta-analysis",
+    "description": "Tutorial and R codes for performing a meta-analysis with the package {metafor}.",
+    "url": "https://cran.r-project.org/web/packages/metafor/vignettes/metafor.pdf",
+    "domain": "CRAN.R-PROJECT.ORG",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Meta-analysis"
+  },
+  {
+    "id": "075gg8tyt",
+    "title": "Doing Meta-Analysis with R: metafor adaptation",
+    "description": "A \"Doing Meta-Analysis in R\" adaptation for the package {metafor}.",
+    "url": "https://cjvanlissa.github.io/Doing-Meta-Analysis-in-R/index.html",
+    "domain": "CJVANLISSA.GITHUB.IO",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Meta-analysis"
+  },
+  {
+    "id": "snwqfmc8y",
+    "title": "R Workshop for Meta-analysis materials",
+    "description": "Slides and R codes of performing meta in R by Wolfgan Viechtbauer.",
+    "url": "https://github.com/wviechtb/workshop_2022_ma_esmarconf",
+    "domain": "GITHUB.COM",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Meta-analysis"
+  },
+  {
+    "id": "mp64umjo8",
+    "title": "Simple workflow of package dmetar for meta-analysis",
+    "description": "R package {dmetar} guide vignette in GitHub repo.",
+    "url": "https://github.com/MathiasHarrer/dmetar/blob/master/vignettes/dmetar_vignette.Rmd",
+    "domain": "GITHUB.COM",
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
+    "addedDate": "05/02/2026",
+    "contributor": "Admin",
+    "category": "meta-analysis",
+    "subCategory": "Meta-analysis"
   },
   {
     "id": "8ztgsctpj",
@@ -314,7 +392,7 @@ export const RESOURCES: Resource[] = [
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "29/01/2026",
     "category": "general",
-    "subCategory": "all"
+    "subCategory": "Intro to HEOR"
   },
   {
     "id": "ny49akpzc",
@@ -350,19 +428,7 @@ export const RESOURCES: Resource[] = [
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "28/01/2026",
     "category": "modelling",
-    "subCategory": "all"
-  },
-  {
-    "id": "anrz5j07v",
-    "title": "Youtube channel_Mirko von Hein",
-    "description": "A former consultant's channel with topics such as health economics, what it means to be a pharma consultant, and industry insights.",
-    "contributor": "Admin",
-    "url": "https://www.youtube.com/@MirkovonHein",
-    "domain": "WWW.YOUTUBE.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "28/01/2026",
-    "category": "modelling",
-    "subCategory": "all"
+    "subCategory": "PartSA"
   },
   {
     "id": "lnwksnmxr",
@@ -374,7 +440,7 @@ export const RESOURCES: Resource[] = [
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
     "category": "general",
-    "subCategory": "all"
+    "subCategory": "Intro to HEOR"
   },
   {
     "id": "3bz5y8qpx",
@@ -410,31 +476,19 @@ export const RESOURCES: Resource[] = [
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
     "category": "meta-analysis",
-    "subCategory": "all"
-  },
-  {
-    "id": "j8nrra4ks",
-    "title": "Open-Source Models_PharmacoEconomics",
-    "description": "A collection of papers with open-source models published in PharmacoEconomics - Open, great resource for learning and model-adjusting",
-    "contributor": "Admin",
-    "url": "https://link.springer.com/collections/ehefgabiif",
-    "domain": "SPRINGER.COM",
-    "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
-    "addedDate": "27/01/2026",
-    "category": "modelling",
-    "subCategory": "all"
+    "subCategory": "Meta-analysis"
   },
   {
     "id": "vmrtjwx99",
     "title": "Doing Meta-Analysis in R: A Hands-on Guide",
-    "description": "A great resource for beginners to meta-analysis with practical code in R",
+    "description": "(one of) The best step-by-step open-source book; covers heterogeneity, subgroup/meta-regression, publication bias, plus advanced chapters.",
     "contributor": "Admin",
     "url": "https://doing-meta.guide/",
     "domain": "DOING-META.GUIDE",
     "imageUrl": "https://images.unsplash.com/photo-1551288049-bbda38a594a0?auto=format&fit=crop&q=80&w=600",
     "addedDate": "27/01/2026",
     "category": "meta-analysis",
-    "subCategory": "Tutorials"
+    "subCategory": "Meta-analysis"
   }
 ];
 
