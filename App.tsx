@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import ResourceCard from './components/ResourceCard';
 import AdminDashboard from './components/AdminDashboard';
@@ -13,7 +13,7 @@ const t = {
   welcome: "Welcome to",
   intro: "The repository of open-source tools & resources for Health Economics and Outcomes Research",
   select: "Select a collection to begin 👇",
-  contributeBtn: "Contribute to HEORepo",
+  contributeBtn: "Contribute to HEORepo.",
   archive: "Archive",
   vault: "Vault",
   deck: "Deck",
@@ -45,7 +45,13 @@ const t = {
   exportCsv: "Export CSV",
   subReceived: "Export Successful",
   subReceivedDesc: "CSV exported. Please email it to contact@heorepo.com",
-  allResources: "All Resources"
+  allResources: "All Resources",
+  bookmarksTitle: "Your Bookmarks",
+  bookmarksEmpty: "No bookmarks yet.",
+  bookmarksEmptyDesc: "Save resources for quick access by clicking the bookmark icon on any card.",
+  bookmarkAdded: "Book mark added",
+  // Fix: Added missing 'saved' property used in the header component
+  saved: "SAVED"
 };
 
 const sanitizeData = (str: string): string => {
@@ -68,6 +74,26 @@ const escapeCSV = (val: string | undefined): string => {
   return `"${str}"`;
 };
 
+const Toast: React.FC<{ message: string; show: boolean; onHide: () => void }> = ({ message, show, onHide }) => {
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(onHide, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [show, onHide]);
+
+  return (
+    <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 ${show ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
+      <div className="bg-[#2563EB] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/20">
+        <span className="text-[13px] font-black uppercase tracking-widest">{message}</span>
+        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path d="M5 13l4 4L19 7" /></svg>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [activeTheme, setActiveTheme] = useState<string>('landing');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
@@ -79,6 +105,8 @@ const App: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
+
+  const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
 
   const shouldResetCache = useMemo(() => {
     const savedVersionStr = localStorage.getItem('heo_repo_version');
@@ -111,6 +139,46 @@ const App: React.FC = () => {
     } catch { return initialTaglines; }
   });
 
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('heo_bookmarks');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  const toggleBookmark = useCallback((id: string) => {
+    setBookmarkedIds(prev => {
+      const isAdding = !prev.includes(id);
+      const newList = isAdding ? [...prev, id] : prev.filter(bid => bid !== id);
+      
+      if (isAdding) {
+        setToast({ show: true, message: t.bookmarkAdded });
+      }
+      
+      localStorage.setItem('heo_bookmarks', JSON.stringify(newList));
+      return newList;
+    });
+  }, []);
+
+  const handleThemeSelect = useCallback((id: string) => {
+    const collection = collections.find(c => c.id === id);
+    let initialSub = 'all';
+    
+    if (id !== 'landing' && id !== Theme.BOOKMARKS && collection && collection.subCategories && collection.subCategories.length > 0) {
+      initialSub = collection.subCategories[0];
+    }
+
+    setActiveTheme(id);
+    setActiveSubCategory(initialSub);
+    setSearchQuery('');
+    
+    if (id !== 'landing') {
+      setIsDotDropped(false);
+    }
+  }, [collections]);
+
+  const currentCollection = useMemo(() => collections.find(c => c.id === activeTheme), [activeTheme, collections]);
+
   useEffect(() => {
     if (searchQuery.toLowerCase() === 'admin') {
       setSearchQuery('');
@@ -127,20 +195,13 @@ const App: React.FC = () => {
     } catch (e) {}
   }, [collections, resources, taglineWords]);
 
-  useEffect(() => {
-    setActiveSubCategory('all');
-    if (activeTheme !== 'landing') {
-      setIsDotDropped(false);
-    }
-  }, [activeTheme]);
-
   const handleLogin = () => {
     if (password.trim() === '123456') {
       setIsAdmin(true);
       setShowLoginModal(false);
       setPassword('');
       setLoginError(false);
-      setActiveTheme('admin-deck');
+      handleThemeSelect('admin-deck');
     } else {
       setLoginError(true);
     }
@@ -149,7 +210,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setIsAdmin(false);
     if (activeTheme === 'admin-deck') {
-      setActiveTheme('landing');
+      handleThemeSelect('landing');
     }
   };
 
@@ -232,30 +293,38 @@ const App: React.FC = () => {
 
   const filteredResources = useMemo(() => {
     return resources.filter(res => {
+      if (activeTheme === Theme.BOOKMARKS) {
+        return bookmarkedIds.includes(res.id);
+      }
       const matchesTheme = activeTheme === 'all' || res.category === activeTheme;
       const matchesSubCategory = activeSubCategory === 'all' || res.subCategory?.toLowerCase() === activeSubCategory.toLowerCase();
       const matchesSearch = res.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             res.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesTheme && matchesSubCategory && matchesSearch;
     });
-  }, [activeTheme, activeSubCategory, searchQuery, resources]);
+  }, [activeTheme, activeSubCategory, searchQuery, resources, bookmarkedIds]);
 
-  const currentCollection = useMemo(() => collections.find(c => c.id === activeTheme), [activeTheme, collections]);
   const isAdminDeckActive = activeTheme === 'admin-deck' && isAdmin;
   const isLandingActive = activeTheme === 'landing';
-  const collectionName = isAdminDeckActive ? t.management : (activeTheme === 'all' ? t.archive : currentCollection?.name || t.archive);
+  const isBookmarksActive = activeTheme === Theme.BOOKMARKS;
+
+  const collectionName = isAdminDeckActive 
+    ? t.management 
+    : (isBookmarksActive ? t.bookmarksTitle : (activeTheme === 'all' ? t.archive : currentCollection?.name || t.archive));
   
   const subCategoryFilters = useMemo(() => {
+    if (isBookmarksActive) return [];
     if (!currentCollection) return [];
     return [...(currentCollection.subCategories || []), 'All'];
-  }, [currentCollection]);
+  }, [currentCollection, isBookmarksActive]);
 
   return (
     <div className="flex h-screen bg-[#FCFDFF] text-slate-900 overflow-hidden font-['Inter'] antialiased relative">
       <Sidebar 
-        collections={collections} activeTheme={activeTheme} onThemeSelect={setActiveTheme} 
+        collections={collections} activeTheme={activeTheme} onThemeSelect={handleThemeSelect} 
         isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}
         onAdminClick={() => isAdmin ? handleLogout() : null} isAdminActive={isAdmin} taglineWords={taglineWords}
+        bookmarkCount={bookmarkedIds.length}
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
@@ -263,7 +332,7 @@ const App: React.FC = () => {
           <header className="bg-white px-4 md:px-8 pt-4 md:pt-8 pb-5 border-b border-[#F1F5F9]/60 relative z-30">
             <div className="max-w-[1440px] mx-auto">
               <div className="flex items-center justify-between mb-4 lg:hidden">
-                <div className="flex items-center font-[900] text-[26px] tracking-[-0.04em] leading-none select-none cursor-pointer" onClick={() => setActiveTheme('landing')}>
+                <div className="flex items-center font-[900] text-[26px] tracking-[-0.04em] leading-none select-none cursor-pointer" onClick={() => handleThemeSelect('landing')}>
                   <span style={{ color: DARK_NAVY }}>HEO</span>
                   <span style={{ backgroundImage: `linear-gradient(to right, ${DARK_NAVY} 50%, ${BRAND_BLUE} 50%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block', position: 'relative', padding: '0 0.2em', margin: '0 -0.2em' }}>R</span>
                   <span style={{ color: BRAND_BLUE }}>epo</span>
@@ -276,7 +345,7 @@ const App: React.FC = () => {
                 <div className="flex flex-col gap-2 md:gap-3">
                   <div className="flex items-center gap-3 md:gap-4">
                     <div className="px-3 py-1 rounded-full bg-[#EFF6FF] border border-[#2563EB]/20 text-[9px] md:text-[10px] font-[800] tracking-[0.12em] md:tracking-[0.15em] text-[#2563EB] uppercase">
-                      {isAdminDeckActive ? t.adminPanel : (activeTheme === 'all' ? t.fullRepo : (currentCollection?.name.toUpperCase() || 'UNKNOWN'))}
+                      {isAdminDeckActive ? t.adminPanel : (isBookmarksActive ? t.saved : (activeTheme === 'all' ? t.fullRepo : (currentCollection?.name.toUpperCase() || 'UNKNOWN')))}
                     </div>
                     {!isAdminDeckActive && <div className="text-[9px] md:text-[10px] font-[800] tracking-[0.12em] md:tracking-[0.15em] text-[#64748B] uppercase">{filteredResources.length} {t.items}</div>}
                   </div>
@@ -337,6 +406,7 @@ const App: React.FC = () => {
                   </div>
                   <div className="max-w-3xl flex flex-col items-center px-4">
                     <p className="text-[14px] md:text-[19px] text-slate-500 font-medium mt-4 md:mt-6 leading-relaxed">
+                      {/* Fix: Corrected typo 'fontWeights' to 'fontWeight' */}
                       The repository of open-source tools & resources <br /> for <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>H</span>ealth <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>E</span>conomics and <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>O</span>utcomes <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>R</span>esearch.
                     </p>
                   </div>
@@ -344,7 +414,7 @@ const App: React.FC = () => {
                     <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">{t.select}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
                       {collections.map(col => (
-                        <button key={col.id} onClick={() => setActiveTheme(col.id)} className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-[24px] hover:border-blue-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                        <button key={col.id} onClick={() => handleThemeSelect(col.id)} className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-[24px] hover:border-blue-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                           <span className="text-3xl mb-3 group-hover:scale-110 transition-transform">{col.icon}</span>
                           <span className="text-[11px] font-black uppercase tracking-widest text-slate-600 group-hover:text-blue-600">{col.name}</span>
                         </button>
@@ -356,12 +426,27 @@ const App: React.FC = () => {
             ) : isAdminDeckActive ? (
               <AdminDashboard resources={resources} setResources={setResources} collections={collections} setCollections={setCollections} taglineWords={taglineWords} setTaglineWords={setTaglineWords} />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 auto-rows-fr">
-                {filteredResources.length > 0 ? filteredResources.map((res, idx) => (<ResourceCard key={res.id} resource={res} index={idx} />)) : (
+              <div 
+                key={`${activeTheme}-${activeSubCategory}`}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 auto-rows-fr animate-card-entry"
+              >
+                {filteredResources.length > 0 ? filteredResources.map((res, idx) => (
+                  <ResourceCard 
+                    key={res.id} 
+                    resource={res} 
+                    index={idx} 
+                    isBookmarked={bookmarkedIds.includes(res.id)}
+                    onToggleBookmark={toggleBookmark}
+                  />
+                )) : (
                   <div className="col-span-full py-20 text-center">
-                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6"><svg className="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
-                    <h3 className="text-xl font-black text-slate-800 mb-2">{t.emptyTitle}</h3>
-                    <p className="text-slate-500 max-w-md mx-auto">{t.emptyDesc}</p>
+                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path d={isBookmarksActive ? "M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" : "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"} />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-800 mb-2">{isBookmarksActive ? t.bookmarksEmpty : t.emptyTitle}</h3>
+                    <p className="text-slate-500 max-w-md mx-auto">{isBookmarksActive ? t.bookmarksEmptyDesc : t.emptyDesc}</p>
                   </div>
                 )}
               </div>
@@ -369,6 +454,8 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <Toast show={toast.show} message={toast.message} onHide={() => setToast({ show: false, message: '' })} />
 
       {showLoginModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">

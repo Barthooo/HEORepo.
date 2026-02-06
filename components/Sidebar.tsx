@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Collection, Theme } from '../types';
 
 interface SidebarProps {
@@ -11,6 +11,7 @@ interface SidebarProps {
   onAdminClick: () => void;
   isAdminActive: boolean;
   taglineWords: string[];
+  bookmarkCount: number;
 }
 
 const BRAND_BLUE = '#2563EB';
@@ -26,7 +27,9 @@ const t = {
   exitAdminMode: "Exit Admin Mode",
   adminPortal: "Admin Portal",
   repository: "REPOSITORY",
-  for: "FOR"
+  for: "FOR",
+  bookmarks: "Bookmarks",
+  saved: "SAVED"
 };
 
 const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
@@ -93,9 +96,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose, 
   onAdminClick, 
   isAdminActive, 
-  taglineWords
+  taglineWords,
+  bookmarkCount
 }) => {
   const isLandingActive = activeTheme === 'landing';
+  const isBookmarksActive = activeTheme === Theme.BOOKMARKS;
 
   return (
     <>
@@ -205,6 +210,38 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="px-4 text-[11px] font-[800] text-[#64748B] uppercase tracking-[0.12em] mb-5">
+              {t.saved}
+            </h3>
+            <div className="space-y-2.5">
+              <button
+                onClick={() => { onThemeSelect(Theme.BOOKMARKS); onClose(); }}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-[20px] transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) group relative ${
+                  isBookmarksActive 
+                  ? 'bg-[#05070a] text-white shadow-[0_12px_24px_rgba(0,0,0,0.18)]' 
+                  : 'text-[#334155] hover:bg-[#f8fafc] hover:translate-x-1'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 transition-all duration-500 ${
+                  isBookmarksActive ? 'bg-white/15' : 'bg-[#f1f5f9] group-hover:bg-[#e2e8f0]'
+                }`}>
+                  <svg className={`w-4 h-4 ${isBookmarksActive ? 'text-white' : 'text-[#475569]'}`} fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                  </svg>
+                </div>
+                <span className="text-[14.5px] font-[800] tracking-tight truncate">{t.bookmarks}</span>
+                {bookmarkCount > 0 && (
+                  <div className={`absolute right-4 px-2 py-0.5 rounded-full text-[10px] font-black tracking-widest transition-all ${
+                    isBookmarksActive ? 'bg-white text-[#05070a]' : 'bg-[#2563EB] text-white'
+                  }`}>
+                    {bookmarkCount}
+                  </div>
+                )}
+              </button>
             </div>
           </div>
 

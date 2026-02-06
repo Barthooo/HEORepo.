@@ -1,29 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Resource } from '../types';
 
 interface ResourceCardProps {
   resource: Resource;
   index: number;
+  isBookmarked: boolean;
+  onToggleBookmark: (id: string) => void;
 }
 
 const DARK_NAVY = '#111827';
 const LIGHT_SLATE = '#94A3B8';
 const THEME_BLUE = '#2563EB';
 
-const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
-  // Initialize bookmark state from localStorage
-  const [bookmarked, setBookmarked] = useState(() => {
-    try {
-      const saved = localStorage.getItem('heo_bookmarks');
-      if (!saved) return resource.isBookmarked || false;
-      const list = JSON.parse(saved);
-      return Array.isArray(list) ? list.includes(resource.id) : false;
-    } catch {
-      return false;
-    }
-  });
-
+const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index, isBookmarked, onToggleBookmark }) => {
   const [imgSrc, setImgSrc] = useState(`https://s0.wp.com/mshots/v1/${encodeURIComponent(resource.url)}?w=600`);
   const [hasFallback, setHasFallback] = useState(false);
   
@@ -44,27 +34,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
   const toggleBookmark = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const newStatus = !bookmarked;
-    setBookmarked(newStatus);
-    
-    try {
-      const saved = localStorage.getItem('heo_bookmarks');
-      let list = saved ? JSON.parse(saved) : [];
-      if (!Array.isArray(list)) list = [];
-      
-      if (newStatus) {
-        if (!list.includes(resource.id)) {
-          list.push(resource.id);
-        }
-      } else {
-        list = list.filter((id: string) => id !== resource.id);
-      }
-      
-      localStorage.setItem('heo_bookmarks', JSON.stringify(list));
-    } catch (err) {
-      console.error("Failed to save bookmark", err);
-    }
+    onToggleBookmark(resource.id);
   };
 
   const shouldHideContributor = 
@@ -143,7 +113,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, index }) => {
               className="focus:outline-none transition-all duration-300 hover:scale-110 p-2 rounded-xl hover:bg-slate-50 active:scale-90"
               title="Bookmark"
             >
-              <svg className={`w-6 h-6 transition-all duration-500 ${bookmarked ? 'text-[#2563EB]' : 'text-[#CBD5E1]'}`} viewBox="0 0 24 24" fill="currentColor">
+              <svg className={`w-6 h-6 transition-all duration-500 ${isBookmarked ? 'text-[#2563EB]' : 'text-[#CBD5E1]'}`} viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" />
               </svg>
             </button>

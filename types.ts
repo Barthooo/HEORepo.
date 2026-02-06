@@ -29,5 +29,6 @@ export enum Theme {
   ECONOMIC_MODELING = 'modelling',
   SYSTEMATIC_REVIEWS = 'meta-analysis',
   SURVIVAL_ANALYSIS = 'survival-analysis',
-  NEWS = 'news'
+  NEWS = 'news',
+  BOOKMARKS = 'bookmarks'
 }
