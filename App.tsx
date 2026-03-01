@@ -50,8 +50,7 @@ const t = {
   bookmarksEmpty: "No bookmarks yet.",
   bookmarksEmptyDesc: "Save resources for quick access by clicking the bookmark icon on any card.",
   bookmarkAdded: "Book mark added",
-  saved: "SAVED",
-  totalCollection: "Total collections"
+  saved: "SAVED"
 };
 
 const sanitizeData = (str: string): string => {
@@ -427,11 +426,6 @@ const App: React.FC = () => {
                     <p className="text-[14px] md:text-[19px] text-slate-500 font-medium mt-4 md:mt-6 leading-relaxed">
                       The repository of open-source tools & resources <br /> for <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>H</span>ealth <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>E</span>conomics and <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>O</span>utcomes <span style={{ color: BRAND_BLUE, fontWeight: 900 }}>R</span>esearch.
                     </p>
-                    <div className="mt-8 flex flex-col items-center">
-                      <span className="px-5 py-2 rounded-full bg-white shadow-sm border border-slate-100 text-[#2563EB] text-[12px] md:text-[14px] font-black uppercase tracking-[0.1em]">
-                        {t.totalCollection}: {resources.length}
-                      </span>
-                    </div>
                   </div>
                   <div className="mt-12 flex flex-col items-center gap-6 w-full max-w-xl px-4 relative z-10">
                     <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">{t.select}</p>

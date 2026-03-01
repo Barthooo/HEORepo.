@@ -12,7 +12,6 @@ interface SidebarProps {
   isAdminActive: boolean;
   taglineWords: string[];
   bookmarkCount: number;
-  lang: 'en' | 'zh';
 }
 
 const BRAND_BLUE = '#2563EB';
@@ -20,31 +19,17 @@ const DARK_NAVY = '#121A26';
 const SLATE_LIGHTER = '#94A3B8'; 
 const SLATE_EXTRA_LIGHTER = '#CBD5E1'; 
 
-const translations = {
-  en: {
-    home: "Welcome",
-    collections: "COLLECTIONS",
-    adminConsole: "ADMIN CONSOLE",
-    adminDeck: "Admin Deck",
-    exitAdminMode: "Exit Admin Mode",
-    adminPortal: "Admin Portal",
-    repository: "REPOSITORY",
-    for: "FOR",
-    bookmarks: "Bookmarks",
-    saved: "SAVED"
-  },
-  zh: {
-    home: "欢迎",
-    collections: "收藏",
-    adminConsole: "管理员控制台",
-    adminDeck: "管理面板",
-    exitAdminMode: "退出管理模式",
-    adminPortal: "管理员门户",
-    repository: "资源库",
-    for: "面向",
-    bookmarks: "书签",
-    saved: "已保存"
-  }
+const t = {
+  home: "Welcome",
+  collections: "COLLECTIONS",
+  adminConsole: "ADMIN CONSOLE",
+  adminDeck: "Admin Deck",
+  exitAdminMode: "Exit Admin Mode",
+  adminPortal: "Admin Portal",
+  repository: "REPOSITORY",
+  for: "FOR",
+  bookmarks: "Bookmarks",
+  saved: "SAVED"
 };
 
 const TypingTagline: React.FC<{ words: string[] }> = ({ words }) => {
@@ -112,10 +97,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAdminClick, 
   isAdminActive, 
   taglineWords,
-  bookmarkCount,
-  lang
+  bookmarkCount
 }) => {
-  const t = translations[lang];
   const isLandingActive = activeTheme === 'landing';
   const isBookmarksActive = activeTheme === Theme.BOOKMARKS;
 

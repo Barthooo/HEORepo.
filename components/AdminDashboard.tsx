@@ -11,7 +11,6 @@ interface AdminDashboardProps {
   taglineWords: string[];
   setTaglineWords: React.Dispatch<React.SetStateAction<string[]>>;
   initialTab?: 'resources' | 'collections' | 'settings';
-  lang: 'en' | 'zh';
 }
 
 const sanitizeInput = (str: string): string => {
@@ -77,8 +76,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   setCollections, 
   taglineWords, 
   setTaglineWords, 
-  initialTab = 'resources',
-  lang
+  initialTab = 'resources' 
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(null);

@@ -8,37 +8,19 @@ interface ResourceCardProps {
   isBookmarked: boolean;
   onToggleBookmark: (id: string) => void;
   viewMode?: ViewMode;
-  lang: 'en' | 'zh';
 }
 
 const DARK_NAVY = '#111827';
 const LIGHT_SLATE = '#94A3B8';
 const THEME_BLUE = '#2563EB';
 
-const translations = {
-  en: {
-    visit: "Visit Resource",
-    added: "Added",
-    uploaded: "UPLOADED",
-    by: "by"
-  },
-  zh: {
-    visit: "访问资源",
-    added: "已添加",
-    uploaded: "已上传",
-    by: "贡献者"
-  }
-};
-
 const ResourceCard: React.FC<ResourceCardProps> = ({ 
   resource, 
   index, 
   isBookmarked, 
   onToggleBookmark,
-  viewMode = ViewMode.GRID,
-  lang
+  viewMode = ViewMode.GRID
 }) => {
-  const t = translations[lang];
   const [imgSrc, setImgSrc] = useState(`https://s0.wp.com/mshots/v1/${encodeURIComponent(resource.url)}?w=600`);
   const [hasFallback, setHasFallback] = useState(false);
   
@@ -96,7 +78,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         </div>
 
         <div className="hidden md:flex flex-col items-end shrink-0 px-2 border-l border-slate-50">
-          <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{t.added}</span>
+          <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Added</span>
           <span className="text-[12px] font-bold text-slate-600">{resource.addedDate}</span>
         </div>
 
@@ -138,7 +120,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
         <div className="absolute inset-0 bg-[#0F172A]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out" />
         
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#2563EB] px-6 py-3 rounded-full flex items-center justify-center gap-2.5 opacity-0 translate-y-4 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 cubic-bezier(0.23, 1, 0.32, 1) z-10 shadow-2xl border border-white/20">
-          <span className="text-white font-[900] text-[11px] tracking-[0.1em] uppercase antialiased whitespace-nowrap">{t.visit}</span>
+          <span className="text-white font-[900] text-[11px] tracking-[0.1em] uppercase antialiased whitespace-nowrap">Visit Resource</span>
           <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -168,12 +150,12 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
             </div>
             
             <div className="flex flex-col">
-              <span className="font-[800] uppercase tracking-[0.18em] leading-tight mb-0.5" style={{ color: LIGHT_SLATE, fontSize: '10px' }}>{t.uploaded}</span>
+              <span className="font-[800] uppercase tracking-[0.18em] leading-tight mb-0.5" style={{ color: LIGHT_SLATE, fontSize: '10px' }}>UPLOADED</span>
               <span className="font-[900] leading-tight text-[#0F172A] tracking-[-0.01em]" style={{ fontSize: '16px' }}>{resource.addedDate}</span>
               
               {!shouldHideContributor && (
                 <div className="font-[700] antialiased mt-1" style={{ color: THEME_BLUE, fontSize: '11.5px' }}>
-                  {t.by} {resource.contributor}
+                  by {resource.contributor}
                 </div>
               )}
             </div>
